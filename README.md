@@ -12,6 +12,7 @@ Bot Discord chuyên nghiệp tổng hợp tin tức kinh tế & crypto tự đ�
 ### 📰 Tin tức Crypto & Kinh tế
 - **Glassnode Insights**: On-chain analytics & research (thay thế Messari)
 - **Santiment API**: Phân tích on-chain và insights
+- **The Block**: Tin tức crypto institutional-grade
 - **5phutcrypto.io**: Tin tức & phân tích tiếng Việt
 - **RSS Feeds**: Thêm nguồn tùy chỉnh (VNExpress, BBC, CNN...)
 - **Tự động dịch**: Tin nước ngoài → Tiếng Việt
