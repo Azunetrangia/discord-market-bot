@@ -82,7 +82,7 @@ class ChannelSelectView(discord.ui.View):
         if self.source_type == 'messari':
             config['messari_channel'] = channel.id
             await interaction.response.edit_message(
-                content=f"✅ Đã cài đặt kênh tin Messari: {channel.mention}",
+                content=f"✅ Đã cài đặt kênh tin Glassnode Insights: {channel.mention}",
                 embed=None,
                 view=None
             )
@@ -438,8 +438,8 @@ class NewsMenuView(discord.ui.View):
                 value="quick_setup"
             ),
             discord.SelectOption(
-                label="Cài đặt kênh tin Messari",
-                description="Chọn kênh để nhận tin từ Messari API",
+                label="Cài đặt kênh tin Glassnode",
+                description="Chọn kênh để nhận insights từ Glassnode",
                 emoji="📊",
                 value="messari"
             ),
@@ -503,11 +503,11 @@ class NewsMenuView(discord.ui.View):
             await interaction.response.edit_message(embed=embed, view=view)
             
         elif value == "messari":
-            # Hiển thị ChannelSelect cho Messari
+            # Hiển thị ChannelSelect cho Glassnode
             view = ChannelSelectView(cog, 'messari')
             embed = discord.Embed(
-                title="📊 Cài đặt kênh tin Messari",
-                description="Chọn kênh để nhận tin tức từ Messari API",
+                title="📊 Cài đặt kênh tin Glassnode Insights",
+                description="Chọn kênh để nhận insights từ Glassnode (on-chain analytics)",
                 color=discord.Color.blue()
             )
             await interaction.response.edit_message(embed=embed, view=view)
@@ -566,7 +566,7 @@ class NewsMenuView(discord.ui.View):
                 color=discord.Color.blue()
             )
             
-            # Messari
+            # Glassnode Insights
             if config['messari_channel']:
                 channel = interaction.guild.get_channel(config['messari_channel'])
                 if not channel:
@@ -578,13 +578,13 @@ class NewsMenuView(discord.ui.View):
                 
                 if channel:
                     embed.add_field(
-                        name="📊 Messari API",
+                        name="📊 Glassnode Insights",
                         value=f"Kênh: {channel.mention}\nID: `{config['messari_channel']}`",
                         inline=False
                     )
                 else:
                     embed.add_field(
-                        name="📊 Messari API",
+                        name="📊 Glassnode Insights",
                         value=f"⚠️ Kênh không tìm thấy hoặc bot không có quyền truy cập\nID: `{config['messari_channel']}`",
                         inline=False
                     )
@@ -1040,23 +1040,29 @@ class NewsCog(commands.Cog):
         # Default fallback icon
         return 'https://cdn-icons-png.flaticon.com/512/888/888846.png'
     
-    async def fetch_messari_news(self):
-        """Lấy tin tức từ Messari API"""
-        api_key = os.getenv('MESSARI_API_KEY')
-        if not api_key:
-            return []
-        
+    async def fetch_glassnode_insights(self):
+        """Lấy insights từ Glassnode RSS feed"""
         try:
-            async with aiohttp.ClientSession() as session:
-                headers = {'x-messari-api-key': api_key}
-                url = 'https://data.messari.io/api/v1/news'
-                
-                async with session.get(url, headers=headers) as response:
-                    if response.status == 200:
-                        data = await response.json()
-                        return data.get('data', [])[:5]  # Lấy 5 tin mới nhất
+            url = 'https://insights.glassnode.com/feed/'
+            
+            # Sử dụng feedparser trong executor để không block
+            loop = asyncio.get_event_loop()
+            feed = await loop.run_in_executor(None, feedparser.parse, url)
+            
+            if feed.entries:
+                articles = []
+                for entry in feed.entries[:5]:  # Lấy 5 tin mới nhất
+                    article = {
+                        'id': entry.get('link', entry.get('id', '')),
+                        'title': entry.get('title', 'Không có tiêu đề'),
+                        'url': entry.get('link', ''),
+                        'description': entry.get('description', '') or entry.get('summary', ''),
+                        'published_at': entry.get('published', ''),
+                    }
+                    articles.append(article)
+                return articles
         except Exception as e:
-            print(f"Lỗi khi lấy tin Messari: {e}")
+            print(f"Lỗi khi lấy tin Glassnode: {e}")
         
         return []
     
@@ -1370,24 +1376,27 @@ class NewsCog(commands.Cog):
         return []
     
     async def fetch_santiment_news(self):
-        """Lấy tin tức từ Santiment API"""
+        """Lấy insights từ Santiment API"""
         api_key = os.getenv('SANTIMENT_API_KEY')
         if not api_key:
             return []
         
         try:
-            # GraphQL query cho Santiment
+            # GraphQL query cho Santiment - sử dụng allInsights
             query = """
             {
-              getNews(
-                size: 5
-                tag: "news"
+              allInsights(
+                page: 1
+                pageSize: 5
               ) {
                 id
                 title
-                description
-                url
+                text
+                readyState
                 publishedAt
+                user {
+                  username
+                }
               }
             }
             """
@@ -1402,7 +1411,20 @@ class NewsCog(commands.Cog):
                 async with session.post(url, json={'query': query}, headers=headers) as response:
                     if response.status == 200:
                         data = await response.json()
-                        return data.get('data', {}).get('getNews', [])
+                        
+                        if 'errors' in data:
+                            print(f"Santiment GraphQL errors: {data['errors']}")
+                            return []
+                        
+                        insights = data.get('data', {}).get('allInsights', [])
+                        
+                        # Chỉ lấy insights đã published
+                        published_insights = [
+                            insight for insight in insights 
+                            if insight.get('readyState') == 'published'
+                        ]
+                        
+                        return published_insights
         except Exception as e:
             print(f"Lỗi khi lấy tin Santiment: {e}")
         
@@ -1437,45 +1459,49 @@ class NewsCog(commands.Cog):
                 config = self.load_news_config(guild.id)
                 last_posts = self.load_last_posts(guild.id)  # ← Load theo guild
                 
-                # Kiểm tra Messari
-                if config['messari_channel']:
+                # Kiểm tra Glassnode Insights (thay thế Messari)
+                if config['messari_channel']:  # Dùng lại key này cho Glassnode
                     channel = self.bot.get_channel(config['messari_channel'])
                     if channel:
-                        news = await self.fetch_messari_news()
-                        for article in news:
+                        articles = await self.fetch_glassnode_insights()
+                        
+                        if not articles:
+                            print(f"⚠️ Glassnode không trả về dữ liệu")
+                        
+                        for article in articles:
                             article_id = article.get('id')
-                            if article_id not in last_posts['messari']:
+                            if article_id not in last_posts['messari']:  # Dùng lại key này
                                 # Lấy nội dung gốc
                                 original_title = article.get('title', 'Không có tiêu đề')
-                                original_content = article.get('content', '')[:400]
+                                original_description = article.get('description', '')
+                                
+                                # Strip HTML tags từ description
+                                soup = BeautifulSoup(original_description, 'html.parser')
+                                clean_description = soup.get_text()[:400]
                                 
                                 # Dịch sang tiếng Việt
                                 translated_title = await self.translate_to_vietnamese(original_title, 250)
-                                translated_content = await self.translate_to_vietnamese(original_content, 400)
+                                translated_description = await self.translate_to_vietnamese(clean_description, 400) if clean_description else ""
                                 
                                 # Đăng tin mới với thiết kế đẹp - chỉ bản dịch
                                 embed = discord.Embed(
-                                    title=f"📰 {translated_title}",
+                                    title=f"� {translated_title}",
                                     url=article.get('url', ''),
-                                    description=translated_content,
-                                    color=0x00D9FF,  # Xanh dương sáng
-                                    timestamp=datetime.fromisoformat(article.get('published_at', '').replace('Z', '+00:00'))
+                                    description=translated_description,
+                                    color=0x5B8DEE,  # Xanh dương Glassnode
+                                    timestamp=datetime.now(VN_TZ)
                                 )
                                 
                                 # Thêm author info với Google Favicon
                                 embed.set_author(
-                                    name="Messari",
-                                    icon_url="https://www.google.com/s2/favicons?domain=messari.io&sz=128"
+                                    name="Glassnode Insights",
+                                    icon_url="https://www.google.com/s2/favicons?domain=glassnode.com&sz=128"
                                 )
-                                
-                                # Thêm thumbnail/image nếu có
-                                if article.get('image_url'):
-                                    embed.set_image(url=article.get('image_url'))
                                 
                                 # Footer với icon
                                 embed.set_footer(
-                                    text="🌐 Nguồn: Messari • Crypto News • Đã dịch tự động",
-                                    icon_url="https://www.google.com/s2/favicons?domain=messari.io&sz=128"
+                                    text="📈 Nguồn: Glassnode • On-chain Analytics • Đã dịch tự động",
+                                    icon_url="https://www.google.com/s2/favicons?domain=glassnode.com&sz=128"
                                 )
                                 
                                 await channel.send(embed=embed)
@@ -1490,30 +1516,41 @@ class NewsCog(commands.Cog):
                 if config['santiment_channel']:
                     channel = self.bot.get_channel(config['santiment_channel'])
                     if channel:
-                        news = await self.fetch_santiment_news()
-                        for article in news:
-                            article_id = article.get('id')
-                            if article_id not in last_posts['santiment']:
+                        insights = await self.fetch_santiment_news()
+                        for insight in insights:
+                            insight_id = str(insight.get('id'))
+                            if insight_id not in last_posts['santiment']:
                                 # Lấy nội dung gốc
-                                original_title = article.get('title', 'Không có tiêu đề')
-                                original_description = article.get('description', '')[:400]
+                                original_title = insight.get('title', 'Không có tiêu đề')
+                                
+                                # Lấy text và strip HTML tags
+                                original_text = insight.get('text', '')
+                                # Remove HTML tags cơ bản
+                                soup = BeautifulSoup(original_text, 'html.parser')
+                                clean_text = soup.get_text()[:400]
                                 
                                 # Dịch sang tiếng Việt
                                 translated_title = await self.translate_to_vietnamese(original_title, 250)
-                                translated_description = await self.translate_to_vietnamese(original_description, 400)
+                                translated_text = await self.translate_to_vietnamese(clean_text, 400) if clean_text else "Đọc thêm tại Santiment"
+                                
+                                # Tạo URL đến insight
+                                insight_url = f"https://insights.santiment.net/read/{insight_id}"
+                                
+                                # Thông tin tác giả
+                                author_name = insight.get('user', {}).get('username', 'Santiment')
                                 
                                 # Đăng tin mới - chỉ bản dịch
                                 embed = discord.Embed(
                                     title=f"📊 {translated_title}",
-                                    url=article.get('url', ''),
-                                    description=translated_description,
+                                    url=insight_url,
+                                    description=translated_text,
                                     color=0x26A69A,  # Xanh lá ngọc lam
-                                    timestamp=datetime.fromisoformat(article.get('publishedAt', '').replace('Z', '+00:00'))
+                                    timestamp=datetime.fromisoformat(insight.get('publishedAt', '').replace('Z', '+00:00'))
                                 )
                                 
                                 # Set author với Google Favicon
                                 embed.set_author(
-                                    name="Santiment Analytics",
+                                    name=f"Santiment Insights • {author_name}",
                                     icon_url="https://www.google.com/s2/favicons?domain=santiment.net&sz=128"
                                 )
                                 
@@ -1526,7 +1563,7 @@ class NewsCog(commands.Cog):
                                 await channel.send(embed=embed)
                                 
                                 # Lưu ID
-                                last_posts['santiment'].append(article_id)
+                                last_posts['santiment'].append(insight_id)
                                 if len(last_posts['santiment']) > 100:
                                     last_posts['santiment'] = last_posts['santiment'][-100:]
                 
