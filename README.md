@@ -1,7 +1,7 @@
 # 🤖 Discord News Bot
 
 Bot Discord chuyên nghiệp tổng hợp tin tức kinh tế & crypto tự động với timezone UTC+7:
-- 📰 **Tin tức Đa nguồn**: Messari, Santiment, 5phutcrypto, RSS Feeds
+- 📰 **Tin tức Đa nguồn**: Glassnode, Santiment, 5phutcrypto, RSS Feeds
 - 📅 **Economic Calendar**: Lịch kinh tế từ Investing.com (UTC+7)
 - 🌐 **Dịch tự động**: Tự động dịch tin nước ngoài sang tiếng Việt
 - 🎨 **Multi-guild Support**: Hỗ trợ nhiều Discord servers cùng lúc
@@ -10,7 +10,7 @@ Bot Discord chuyên nghiệp tổng hợp tin tức kinh tế & crypto tự đ�
 ## ✨ Tính năng nổi bật
 
 ### 📰 Tin tức Crypto & Kinh tế
-- **Messari API**: Tin tức crypto market real-time
+- **Glassnode Insights**: On-chain analytics & research (thay thế Messari)
 - **Santiment API**: Phân tích on-chain và insights
 - **5phutcrypto.io**: Tin tức & phân tích tiếng Việt
 - **RSS Feeds**: Thêm nguồn tùy chỉnh (VNExpress, BBC, CNN...)
@@ -58,7 +58,6 @@ Chỉnh sửa file `.env` với các thông tin của bạn:
 DISCORD_BOT_TOKEN=your_discord_bot_token_here
 
 # API Keys (Optional - nếu sử dụng tính năng tương ứng)
-MESSARI_API_KEY=your_messari_api_key_here
 SANTIMENT_API_KEY=your_santiment_api_key_here
 COINGECKO_API_KEY=your_coingecko_api_key_here
 
@@ -112,11 +111,11 @@ Gõ: /start
 
 Nhấn **[Quản lý Tin tức]** → Menu hiện ra:
 
-#### 📊 Cài đặt kênh tin Messari
+#### 📊 Cài đặt kênh tin Glassnode
 ```
 🎯 Chức năng:
-  • Tin tức crypto market real-time
-  • Phân tích thị trường chuyên sâu
+  • On-chain analytics và research
+  • Insights từ Glassnode platform
   • 🌐 Tự động dịch sang tiếng Việt
   
 💡 Cách dùng: Chọn channel Discord để nhận tin
@@ -208,8 +207,8 @@ Bot tự động kiểm tra và đăng tin mới mỗi **5 phút** ⏰:
 
 | Nguồn | Tính năng | Dịch? |
 |-------|-----------|-------|
-| 📊 **Messari** | Crypto market news | 🌐 Có |
-| 🔗 **Santiment** | On-chain analytics | 🌐 Có |
+| 📊 **Glassnode** | On-chain analytics | 🌐 Có |
+| 🔗 **Santiment** | On-chain insights | 🌐 Có |
 | ⚡ **5phutcrypto** | Tin tiếng Việt | ❌ Không |
 | 📅 **Economic Calendar** | Lịch kinh tế (UTC+7) | ❌ Không |
 | 📡 **RSS Feeds** | Nguồn tùy chỉnh | 🌐 Auto-detect |
@@ -262,7 +261,7 @@ discord-bot/
 Bot chạy background tasks tự động:
 
 ### 📰 News Checker (Mỗi 5 phút)
-- Kiểm tra Messari API
+- Kiểm tra Glassnode Insights RSS
 - Kiểm tra Santiment API
 - Kiểm tra 5phutcrypto.io
 - Kiểm tra tất cả RSS Feeds
@@ -286,7 +285,7 @@ Bot hỗ trợ nhiều Discord servers:
 {
   "guilds": {
     "guild_id_1": {
-      "messari_channel": 123456789,
+      "glassnode_channel": 123456789,
       "santiment_channel": 123456789,
       "5phutcrypto_channel": 123456789,
       "economic_calendar_channel": 123456789,
