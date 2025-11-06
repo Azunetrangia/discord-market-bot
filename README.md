@@ -1,22 +1,32 @@
 # 🤖 Discord News Bot
 
-Bot Discord chuyên nghiệp cho tin tức tự động với dịch tiếng Việt:
-- 📰 **Trạm Tin tức Tự động**: Thu thập tin từ Messari, Santiment APIs và RSS Feeds
-- 🌐 **Dịch tự động**: Tự động dịch tin tức nước ngoài sang tiếng Việt
-- 🎨 **Giao diện đẹp**: Embed màu sắc, hình ảnh, emoji phong phú
+Bot Discord chuyên nghiệp tổng hợp tin tức kinh tế & crypto tự động với timezone UTC+7:
+- 📰 **Tin tức Đa nguồn**: Messari, Santiment, 5phutcrypto, RSS Feeds
+- 📅 **Economic Calendar**: Lịch kinh tế từ Investing.com (UTC+7)
+- 🌐 **Dịch tự động**: Tự động dịch tin nước ngoài sang tiếng Việt
+- 🎨 **Multi-guild Support**: Hỗ trợ nhiều Discord servers cùng lúc
+- 🕐 **Timezone UTC+7**: Hiển thị giờ Việt Nam cho tất cả events
 
 ## ✨ Tính năng nổi bật
 
-### 📰 Quản lý Tin tức
-- Tích hợp Messari API cho tin tức crypto market
-- Tích hợp Santiment API cho phân tích on-chain
-- Hỗ trợ thêm nhiều RSS Feeds tùy chỉnh (VNExpress, BBC, CNN, Reuters...)
-- **Tự động dịch sang tiếng Việt** cho tin nước ngoài
-- **Phát hiện tiếng Việt**: Không dịch các nguồn như VNExpress
-- Tự động đăng tin mới mỗi 10 phút
+### 📰 Tin tức Crypto & Kinh tế
+- **Messari API**: Tin tức crypto market real-time
+- **Santiment API**: Phân tích on-chain và insights
+- **5phutcrypto.io**: Tin tức & phân tích tiếng Việt
+- **RSS Feeds**: Thêm nguồn tùy chỉnh (VNExpress, BBC, CNN...)
+- **Tự động dịch**: Tin nước ngoài → Tiếng Việt
+- **Phát hiện ngôn ngữ**: Không dịch nguồn tiếng Việt
+- **HTML entities decode**: Hiển thị tiếng Việt chuẩn
+- Tự động đăng tin mới mỗi 5 phút
 - Chống trùng lặp tin thông minh
-- Quản lý dễ dàng qua giao diện tương tác
-- Hiển thị cả bản dịch và bản gốc
+
+### 📅 Economic Calendar
+- **Investing.com scraper**: Lịch kinh tế tự động
+- **Timezone UTC+7**: Hiển thị giờ Việt Nam
+- **Filter Impact**: Chỉ High & Medium events
+- **Future events only**: Lọc events trong tương lai
+- **Date filtering**: URL parameters cho dữ liệu chính xác
+- Test command: `!testcalendar` (Admin only)
 
 ## 🚀 Cài đặt
 
@@ -45,16 +55,15 @@ Chỉnh sửa file `.env` với các thông tin của bạn:
 
 ```env
 # Discord Bot Token (từ Discord Developer Portal)
-DISCORD_TOKEN=your_discord_bot_token_here
+DISCORD_BOT_TOKEN=your_discord_bot_token_here
 
-# Messari API Key (https://messari.io/api)
+# API Keys (Optional - nếu sử dụng tính năng tương ứng)
 MESSARI_API_KEY=your_messari_api_key_here
-
-# Santiment API Key (https://santiment.net/products-and-plans/sanapi)
 SANTIMENT_API_KEY=your_santiment_api_key_here
-
-# CoinGecko API Key (https://www.coingecko.com/en/api/pricing)
 COINGECKO_API_KEY=your_coingecko_api_key_here
+
+# Google Translate API (Free tier từ deep-translator)
+# Không cần API key - sử dụng deep-translator package
 ```
 
 ### 4. Tạo Discord Bot
@@ -80,129 +89,220 @@ python main_bot.py
 
 ## 📖 Hướng dẫn Sử dụng
 
-### Lệnh Duy nhất: `/start`
+### 🎮 Lệnh Chính: `/start`
 
-Bot chỉ có **MỘT** lệnh slash duy nhất: `/start`
+Bot chỉ có **MỘT** lệnh slash chính: **`/start`** ⭐
 
-Tất cả chức năng được truy cập qua giao diện tương tác (Buttons, Select Menus, Modals).
+```
+Gõ: /start
+     ↓
+┌─────────────────────────────────────┐
+│  🤖 Discord News Bot                │
+│  ───────────────────────────────    │
+│  Chọn chức năng bạn muốn sử dụng:  │
+│                                     │
+│  📰 [Quản lý Tin tức]              │
+│  📅 [Economic Calendar]            │
+└─────────────────────────────────────┘
+```
 
-### 📰 Quản lý Tin tức (Chỉ Admin)
+---
 
-1. Gõ `/start` trong Discord
-2. Nhấn button **[Quản lý Tin tức]**
-3. Chọn một trong các tùy chọn:
+### 📰 Quản lý Tin tức (🔐 Admin only)
 
-#### Cài đặt kênh tin Messari
-- Chọn kênh Discord để nhận tin từ Messari API
-- Tin tức sẽ tự động đăng mỗi 10 phút
+Nhấn **[Quản lý Tin tức]** → Menu hiện ra:
 
-#### Cài đặt kênh tin Santiment
-- Chọn kênh Discord để nhận tin từ Santiment API
-- Phân tích on-chain và insights tự động
+#### 📊 Cài đặt kênh tin Messari
+```
+🎯 Chức năng:
+  • Tin tức crypto market real-time
+  • Phân tích thị trường chuyên sâu
+  • 🌐 Tự động dịch sang tiếng Việt
+  
+💡 Cách dùng: Chọn channel Discord để nhận tin
+```
 
-#### Thêm RSS Feed mới
-1. Bot hiển thị Modal hỏi:
-   - URL của RSS Feed
-   - Tên nguồn tin (hiển thị trong embed)
-2. Sau khi submit, chọn kênh để đăng tin
-3. Bot sẽ tự động kiểm tra và đăng tin mới
+#### 🔗 Cài đặt kênh tin Santiment
+```
+🎯 Chức năng:
+  • Dữ liệu on-chain analytics
+  • Insights từ blockchain
+  • 🌐 Tự động dịch sang tiếng Việt
+  
+💡 Cách dùng: Chọn channel để nhận tin phân tích
+```
 
-#### Xóa RSS Feed
+#### ⚡ Cài đặt kênh 5phutcrypto
+```
+🎯 Chức năng:
+  • Tin tức crypto tiếng Việt 🇻🇳
+  • Phân tích & hướng dẫn
+  • Không cần dịch
+  
+💡 Cách dùng: Chọn channel để nhận tin Việt Nam
+```
+
+#### 📅 Cài đặt Economic Calendar
+```
+🎯 Chức năng:
+  • Lịch kinh tế tự động từ Investing.com
+  • 🕐 Hiển thị giờ UTC+7 (Việt Nam)
+  • 🔴 High & 🟠 Medium impact events
+  • Chỉ hiển thị events trong tương lai
+  
+💡 Cách dùng: Chọn channel để nhận lịch kinh tế
+```
+
+#### 📡 Thêm RSS Feed mới
+```
+🎯 Chức năng:
+  • Thêm nguồn tin tùy chỉnh
+  • Hỗ trợ: VNExpress, BBC, CNN, Reuters...
+  • 🌐 Tự động phát hiện ngôn ngữ và dịch
+  
+💡 Cách dùng:
+  1️⃣ Nhấn "Thêm một RSS Feed mới"
+  2️⃣ Nhập URL và tên nguồn tin
+  3️⃣ Chọn channel để đăng tin
+  ✅ Bot tự động xử lý!
+```
+
+#### 🗑️ Xóa RSS Feed
 - Chọn RSS Feed từ danh sách
-- Xác nhận xóa
+- Xác nhận xóa → Hoàn tất! ✅
 
-#### Liệt kê các nguồn tin
-- Xem tất cả nguồn tin đang hoạt động
-- Hiển thị kênh đích cho mỗi nguồn
+#### 📋 Liệt kê các nguồn tin
+- Xem tất cả nguồn đang hoạt động 📊
+- Hiển thị channel cho mỗi nguồn 📍
 
-### 🔔 Quản lý Cảnh báo (Mọi người dùng)
+---
 
-1. Gõ `/start` trong Discord
-2. Nhấn button **[Quản lý Cảnh báo]**
-3. Chọn một trong các tùy chọn:
+### 📅 Economic Calendar (🔐 Admin only)
 
-#### Thêm Cảnh báo mới
-1. Bot hiển thị Modal hỏi:
-   - **Ticker**: Mã coin (VD: `BTC`, `ETH`, `SOL`)
-   - **Giá mục tiêu**: Giá bạn muốn nhận thông báo (VD: `69000`)
-2. Bot sẽ xác nhận và lưu cảnh báo
-3. Khi giá đạt mục tiêu:
-   - Bot ping bạn trong kênh
-   - Gửi embed với thông tin giá
-   - Kèm biểu đồ 7 ngày
-   - Tự động xóa cảnh báo
+Nhấn **[Economic Calendar]** để cấu hình lịch kinh tế:
 
-#### Liệt kê Cảnh báo của tôi
-- Xem tất cả cảnh báo đang hoạt động
-- Hiển thị giá mục tiêu, kênh, thời gian tạo
+#### 📊 Cài đặt kênh Economic Calendar
+```
+🎯 Chức năng:
+  • Lịch kinh tế tự động từ Investing.com
+  • 🕐 Hiển thị giờ UTC+7 (Việt Nam)
+  • 🔴 High & 🟠 Medium impact events
+  • Chỉ hiển thị events trong tương lai
+  
+💡 Cách dùng: Chọn channel Discord để nhận lịch kinh tế
+```
 
-#### Xóa Cảnh báo
-- Chọn cảnh báo từ danh sách
-- Xác nhận xóa
+#### 🧪 Test Economic Calendar
+```
+💡 Admin Command: !testcalendar
+  • Test ngay lập tức (không cần đợi 5 phút)
+  • Kiểm tra dữ liệu từ Investing.com
+  • Xác minh timezone UTC+7
+```
 
-## 🎯 Ticker Hỗ trợ
+---
 
-Bot hỗ trợ các ticker phổ biến (tự động map sang CoinGecko ID):
+### 🤖 Tin tức Tự động (Background)
 
-| Ticker | Coin | Ticker | Coin |
-|--------|------|--------|------|
-| BTC | Bitcoin | ETH | Ethereum |
-| BNB | Binance Coin | SOL | Solana |
-| XRP | Ripple | ADA | Cardano |
-| DOGE | Dogecoin | DOT | Polkadot |
-| MATIC | Polygon | AVAX | Avalanche |
-| LINK | Chainlink | UNI | Uniswap |
-| ATOM | Cosmos | LTC | Litecoin |
-| ETC | Ethereum Classic | | |
+Bot tự động kiểm tra và đăng tin mới mỗi **5 phút** ⏰:
 
-**Lưu ý**: Bạn cũng có thể sử dụng CoinGecko ID trực tiếp (VD: `bitcoin`, `ethereum`)
+| Nguồn | Tính năng | Dịch? |
+|-------|-----------|-------|
+| 📊 **Messari** | Crypto market news | 🌐 Có |
+| 🔗 **Santiment** | On-chain analytics | 🌐 Có |
+| ⚡ **5phutcrypto** | Tin tiếng Việt | ❌ Không |
+| 📅 **Economic Calendar** | Lịch kinh tế (UTC+7) | ❌ Không |
+| 📡 **RSS Feeds** | Nguồn tùy chỉnh | 🌐 Auto-detect |
+
+> **💡 Admin Tip**: Dùng lệnh `!testcalendar` để test Economic Calendar ngay lập tức (không cần đợi 5 phút)
 
 ## 📁 Cấu trúc Project
 
 ```
 discord-bot/
-├── main_bot.py              # File chính, lệnh /start
+├── main_bot.py                  # Entry point
 ├── cogs/
-│   ├── news_cog.py          # Cog quản lý tin tức
-│   └── alerts_cog.py        # Cog quản lý cảnh báo
+│   └── news_cog.py              # Tin tức & Economic Calendar
 ├── data/
-│   ├── news_config.json     # Cấu hình nguồn tin
-│   ├── last_post_ids.json   # Lưu ID tin đã đăng (chống trùng)
-│   └── alerts.json          # Lưu danh sách cảnh báo
-├── .env                     # Environment variables (GIT IGNORE)
-├── .env.example             # Template cho .env
-├── requirements.txt         # Python dependencies
-└── README.md               # File này
+│   ├── news_config.json         # Cấu hình per-guild
+│   └── last_post_ids.json       # Tracking per-guild
+├── docs/                        # Documentation
+│   ├── README.md                # Main docs
+│   ├── API_REFERENCE.md         # Technical details
+│   ├── TROUBLESHOOTING.md       # Common issues
+│   └── ...
+├── scripts/                     # Utility scripts
+│   ├── check_channels.py        # Verify channels
+│   ├── verify_multi_guild_posts.py
+│   └── ...
+├── tests/                       # Test scripts
+│   ├── test_calendar.py
+│   ├── test_url_variants.py
+│   └── ...
+├── logs/                        # Log files (gitignored)
+├── .env                         # Environment variables (gitignored)
+├── .env.example                 # Template
+├── requirements.txt             # Dependencies
+└── README.md                    # This file
 ```
 
 ## 🛠️ Tech Stack
 
 - **discord.py** (v2.3.2+): Discord bot framework
-- **python-dotenv**: Quản lý environment variables
+- **python-dotenv**: Environment variables
 - **aiohttp**: Async HTTP requests
-- **feedparser**: Parse RSS/Atom feeds
-- **matplotlib**: Vẽ biểu đồ giá
-- **pycoingecko**: CoinGecko API wrapper
+- **feedparser**: RSS/Atom feeds parsing
+- **BeautifulSoup4**: Web scraping (Economic Calendar)
+- **pytz**: Timezone handling (UTC+7)
+- **deep-translator**: Google Translate wrapper
+- **html**: HTML entities decoding
 
 ## ⚙️ Background Tasks
 
-Bot chạy 2 background tasks tự động:
+Bot chạy background tasks tự động:
 
-### 📰 News Checker (Mỗi 10 phút)
+### 📰 News Checker (Mỗi 5 phút)
 - Kiểm tra Messari API
 - Kiểm tra Santiment API
+- Kiểm tra 5phutcrypto.io
 - Kiểm tra tất cả RSS Feeds
-- So sánh với last_post_ids để chống trùng
+- Kiểm tra Economic Calendar (Investing.com)
+- So sánh với `last_post_ids` per-guild để chống trùng
 - Đăng tin mới vào kênh đã cấu hình
+- **Multi-guild support**: Xử lý từng guild độc lập
 
-### 🔔 Price Checker (Mỗi 60 giây)
-- Load tất cả cảnh báo
-- Lấy giá từ CoinGecko (batch request)
-- So sánh giá hiện tại với target
-- Nếu đạt mục tiêu:
-  - Vẽ biểu đồ 7 ngày
-  - Gửi thông báo + ping user
-  - Xóa cảnh báo
+### � Timezone Handling
+- **VN_TZ**: `Asia/Ho_Chi_Minh` (UTC+7)
+- Economic Calendar: Convert UTC-5 (Investing.com) → UTC+7
+- Hiển thị thời gian theo múi giờ Việt Nam
+- Filter events: Chỉ hiển thị events trong tương lai
+
+## 🌐 Multi-guild Support
+
+Bot hỗ trợ nhiều Discord servers:
+
+### Data Structure (per-guild)
+```json
+{
+  "guilds": {
+    "guild_id_1": {
+      "messari_channel": 123456789,
+      "santiment_channel": 123456789,
+      "5phutcrypto_channel": 123456789,
+      "economic_calendar_channel": 123456789,
+      "rss_feeds": [...]
+    },
+    "guild_id_2": {
+      ...
+    }
+  }
+}
+```
+
+### Features
+- ✅ Mỗi guild có cấu hình riêng
+- ✅ Tracking posts riêng cho mỗi guild
+- ✅ Không xung đột dữ liệu giữa các guilds
 
 ## 🔒 Bảo mật
 
@@ -213,32 +313,41 @@ Bot chạy 2 background tasks tự động:
 
 ## 🐛 Troubleshooting
 
-### Bot không phản hồi lệnh `/start`
-- Kiểm tra bot đã được thêm vào server chưa
-- Kiểm tra bot có quyền "Use Application Commands"
-- Đợi vài phút để Discord sync commands
-- Restart bot và thử lại
+### Bot không đăng tin
+- Kiểm tra API keys trong `.env`
+- Kiểm tra channels đã được cấu hình trong `data/news_config.json`
+- Xem console logs để debug
+- Đợi 5 phút cho vòng lặp tiếp theo
+- Verify bot có quyền `Send Messages`, `Embed Links` trong channel
 
-### Không nhận được tin tức
-- Kiểm tra API keys trong `.env` có đúng không
-- Kiểm tra kênh đã được cài đặt chưa
-- Xem console log để debug errors
-- Đợi 10 phút cho vòng lặp tiếp theo
+### Economic Calendar không có events
+- Kiểm tra URL filtering: Bot fetch từ Investing.com với `?dateFrom={today}&dateTo={today}`
+- Timezone: Events được convert từ UTC-5 sang UTC+7
+- Filter: Chỉ hiển thị High & Medium impact
+- Chỉ events trong tương lai (>= current time UTC+7)
+- Sử dụng `!testcalendar` để test ngay
 
-### Cảnh báo không kích hoạt
-- Kiểm tra `COINGECKO_API_KEY` có đúng không
-- Kiểm tra ticker có đúng không (dùng `/start` → Liệt kê)
-- Đợi tối đa 60 giây cho vòng lặp kiểm tra
-- Xem console log để debug
+### RSS feed hiển thị lỗi chữ
+- ✅ Đã fix: `html.unescape()` decode HTML entities
+- Nếu vẫn lỗi: Kiểm tra encoding của RSS feed
+- VNExpress, BBC, CNN đã được test thành công
 
-### Lỗi import matplotlib
+### Không nhận tin từ nguồn tiếng Việt
+- Bot tự động phát hiện: `vnexpress`, `vn` trong URL/name
+- Không dịch nếu là tiếng Việt
+- Kiểm tra feed URL có chính xác không
+
+### Multi-guild issues
+- Mỗi guild có file config riêng trong `data/news_config.json`
+- Tracking posts riêng trong `data/last_post_ids.json`
+- Sử dụng script `scripts/check_channels.py` để verify
+- Sử dụng `scripts/verify_multi_guild_posts.py` để kiểm tra posts
+
+### Lỗi import
 ```bash
-# Linux/Mac
-pip install matplotlib
-
-# Windows
-pip install matplotlib
-# Nếu lỗi, cài Visual C++ Build Tools
+pip install -r requirements.txt
+# Hoặc
+pip install discord.py python-dotenv aiohttp feedparser beautifulsoup4 pytz deep-translator
 ```
 
 ## 📝 License
@@ -256,8 +365,39 @@ Mọi đóng góp đều được hoan nghênh! Vui lòng:
 
 ## 📧 Liên hệ
 
-Nếu có vấn đề hoặc câu hỏi, vui lòng mở Issue trên GitHub.
+Nếu có vấn đề hoặc câu hỏi:
+- Mở Issue trên GitHub
+- Xem documentation trong folder `docs/`
+- Check troubleshooting guide: `docs/TROUBLESHOOTING.md`
+
+## 📚 Documentation
+
+- **README.md** - Main documentation (this file)
+- **docs/API_REFERENCE.md** - Technical details
+- **docs/TROUBLESHOOTING.md** - Common issues & solutions
+- **docs/PROJECT_OVERVIEW.md** - Architecture & structure
+- **docs/CHANGELOG.md** - Version history
+
+## 🎯 Features Roadmap
+
+### Current (v1.0)
+- ✅ Multi-guild support
+- ✅ Economic Calendar (UTC+7)
+- ✅ 5phutcrypto.io integration
+- ✅ HTML entities decoding
+- ✅ Auto translation to Vietnamese
+- ✅ RSS feeds with language detection
+
+### Future
+- [ ] Dashboard web interface
+- [ ] Analytics & statistics
+- [ ] User preferences
+- [ ] More economic data sources
+- [ ] Portfolio tracking
+- [ ] Trading signals
 
 ---
 
-**Made with ❤️ using discord.py**
+**Made with ❤️ for the Vietnamese crypto community**
+
+**Repository**: https://github.com/Azunetrangia/discord-market-bot
