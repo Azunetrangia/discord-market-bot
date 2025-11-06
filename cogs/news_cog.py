@@ -15,6 +15,9 @@ from dotenv import load_dotenv
 # Load environment variables
 load_dotenv()
 
+# Timezone UTC+7 (Vietnam/Bangkok)
+VN_TZ = pytz.timezone('Asia/Ho_Chi_Minh')
+
 class AddRSSModal(discord.ui.Modal, title="Thêm RSS Feed mới"):
     """Modal để nhập thông tin RSS Feed"""
     
@@ -894,11 +897,41 @@ class NewsCog(commands.Cog):
         with open(self.config_path, 'w', encoding='utf-8') as f:
             json.dump(all_configs, f, indent=2, ensure_ascii=False)
     
-    def load_last_posts(self):
-        """Load danh sách ID bài viết đã đăng"""
+    def load_last_posts(self, guild_id=None):
+        """Load danh sách ID bài viết đã đăng cho guild cụ thể"""
         try:
             with open(self.last_posts_path, 'r', encoding='utf-8') as f:
-                return json.load(f)
+                all_posts = json.load(f)
+            
+            # Nếu là format cũ (không phân theo guild), migrate sang format mới
+            if 'guilds' not in all_posts:
+                # Migration: save format mới trực tiếp vào file
+                new_format = {'guilds': {}}
+                with open(self.last_posts_path, 'w', encoding='utf-8') as f:
+                    json.dump(new_format, f, indent=2, ensure_ascii=False)
+                all_posts = new_format
+            
+            # Trả về posts của guild cụ thể
+            if guild_id:
+                guild_key = str(guild_id)
+                if guild_key not in all_posts['guilds']:
+                    all_posts['guilds'][guild_key] = {
+                        "messari": [],
+                        "santiment": [],
+                        "5phutcrypto": [],
+                        "economic_events": [],
+                        "rss": {}
+                    }
+                return all_posts['guilds'][guild_key]
+            
+            # Return default structure
+            return {
+                "messari": [],
+                "santiment": [],
+                "5phutcrypto": [],
+                "economic_events": [],
+                "rss": {}
+            }
         except:
             return {
                 "messari": [],
@@ -908,10 +941,37 @@ class NewsCog(commands.Cog):
                 "rss": {}
             }
     
-    def save_last_posts(self, data):
-        """Lưu danh sách ID bài viết đã đăng"""
-        with open(self.last_posts_path, 'w', encoding='utf-8') as f:
-            json.dump(data, f, indent=2, ensure_ascii=False)
+    def save_last_posts(self, data, guild_id=None):
+        """Lưu danh sách ID bài viết đã đăng cho guild cụ thể"""
+        print(f"[DEBUG] save_last_posts called with guild_id={guild_id}")
+        try:
+            # Load tất cả posts
+            try:
+                with open(self.last_posts_path, 'r', encoding='utf-8') as f:
+                    all_posts = json.load(f)
+                print(f"[DEBUG] Loaded existing file, keys: {list(all_posts.keys())}")
+                    
+                # Migrate nếu chưa có guilds structure
+                if 'guilds' not in all_posts:
+                    print(f"[DEBUG] Migrating to new format!")
+                    all_posts = {'guilds': {}}
+                else:
+                    print(f"[DEBUG] File already has guilds structure")
+            except Exception as ex:
+                print(f"[DEBUG] Failed to load file: {ex}, creating new")
+                all_posts = {'guilds': {}}
+            
+            # Lưu posts cho guild này
+            if guild_id:
+                all_posts['guilds'][str(guild_id)] = data
+                print(f"[DEBUG] Saved data for guild {guild_id}, total guilds: {len(all_posts['guilds'])}")
+            
+            # Lưu file
+            with open(self.last_posts_path, 'w', encoding='utf-8') as f:
+                json.dump(all_posts, f, indent=2, ensure_ascii=False)
+            print(f"[DEBUG] File saved successfully")
+        except Exception as e:
+            print(f"Lỗi khi lưu last_posts: {e}")
     
     async def translate_to_vietnamese(self, text, max_length=None):
         """Dịch text sang tiếng Việt"""
@@ -1024,7 +1084,7 @@ class NewsCog(commands.Cog):
                                     'id': link_tag['href'],
                                     'title': link_tag.get_text(strip=True),
                                     'url': link_tag['href'],
-                                    'published_at': datetime.now().isoformat()
+                                    'published_at': datetime.now(VN_TZ).isoformat()  # UTC+7
                                 }
                                 
                                 # Tìm ảnh thumbnail (thường ở gần h3)
@@ -1081,7 +1141,7 @@ class NewsCog(commands.Cog):
             embed = discord.Embed(
                 title=title,
                 color=color,
-                timestamp=datetime.now()
+                timestamp=datetime.now(VN_TZ)  # UTC+7
             )
             
             # Lấy 3 giá trị: Forecast, Actual, Previous
@@ -1161,7 +1221,13 @@ class NewsCog(commands.Cog):
             from bs4 import BeautifulSoup
             import aiohttp
             
-            url = "https://www.investing.com/economic-calendar/"
+            # Get today's date in UTC+7
+            vietnam_tz = pytz.timezone('Asia/Ho_Chi_Minh')
+            today = datetime.now(vietnam_tz)
+            date_str = today.strftime('%Y-%m-%d')
+            
+            # Use date filter to get today's events
+            url = f"https://www.investing.com/economic-calendar/?dateFrom={date_str}&dateTo={date_str}"
             headers = {
                 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
                 'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
@@ -1180,11 +1246,44 @@ class NewsCog(commands.Cog):
                         rows = soup.find_all('tr', {'class': 'js-event-item'})
                         print(f"📊 Found {len(rows)} economic events from Investing.com")
                         
-                        for row in rows[:50]:  # Lấy 50 events đầu tiên
+                        # Get current datetime in UTC+7
+                        vietnam_tz = pytz.timezone('Asia/Ho_Chi_Minh')
+                        now_vn = datetime.now(vietnam_tz)
+                        today_vn = now_vn.date()
+                        print(f"📅 Now in UTC+7: {now_vn.strftime('%Y-%m-%d %H:%M')}")
+                        
+                        for row in rows[:150]:  # Tăng lên 150 để đảm bảo đủ events
                             try:
-                                # Get time
-                                time_elem = row.find('td', {'class': 'time'})
-                                time_str = time_elem.text.strip() if time_elem else ''
+                                # Get event datetime from data attribute
+                                event_datetime_str = row.get('data-event-datetime', '')
+                                
+                                if not event_datetime_str:
+                                    continue
+                                
+                                # Parse datetime (format: "2025/11/06 10:00:00" in UTC-5)
+                                try:
+                                    # Parse as UTC-5 (naive datetime)
+                                    event_dt_utc5 = datetime.strptime(event_datetime_str, '%Y/%m/%d %H:%M:%S')
+                                    
+                                    # Convert to UTC+7 (add 12 hours) and make it timezone-aware
+                                    event_dt_vn_naive = event_dt_utc5 + timedelta(hours=12)
+                                    event_dt_vn = vietnam_tz.localize(event_dt_vn_naive)
+                                    
+                                    # Filter: CHỈ LẤY EVENTS CHƯA DIỄN RA (từ giờ hiện tại trở đi)
+                                    # Không filter theo ngày nữa - lấy tất cả events tương lai kể cả ngày mai
+                                    if event_dt_vn < now_vn:
+                                        continue
+                                    
+                                    # Format time for display with date if not today
+                                    if event_dt_vn.date() == today_vn:
+                                        time_str = event_dt_vn.strftime('%H:%M')
+                                    else:
+                                        # Include date if event is tomorrow or later
+                                        time_str = event_dt_vn.strftime('%d/%m %H:%M')
+                                    
+                                except Exception as e:
+                                    print(f"Error parsing datetime {event_datetime_str}: {e}")
+                                    continue
                                 
                                 # Get country
                                 country_elem = row.find('td', {'class': 'flagCur'})
@@ -1194,18 +1293,22 @@ class NewsCog(commands.Cog):
                                 else:
                                     country = ''
                                 
+                                # Không filter theo country nữa - lấy tất cả các quốc gia
                                 # Filter for major economies only
-                                major_countries = ['United States', 'Euro Zone', 'Germany', 'United Kingdom', 'Japan', 'China']
-                                if country not in major_countries:
-                                    continue
+                                # major_countries = ['United States', 'Euro Zone', 'Germany', 'United Kingdom', 'Japan', 'China']
+                                # if country not in major_countries:
+                                #     continue
                                 
-                                # Get impact
+                                # Get impact - DÙNG data-img_key thay vì class
                                 impact_elem = row.find('td', {'class': 'sentiment'})
-                                impact_class = str(impact_elem.get('class', [])) if impact_elem else ''
-                                if 'redFont' in impact_class or 'bearish' in impact_class:
-                                    impact = 'High'
-                                elif 'yellowFont' in impact_class or 'neutral' in impact_class:
-                                    impact = 'Medium'
+                                if impact_elem:
+                                    img_key = impact_elem.get('data-img_key', '')
+                                    if img_key == 'bull3':
+                                        impact = 'High'
+                                    elif img_key == 'bull2':
+                                        impact = 'Medium'
+                                    else:  # bull1 or empty
+                                        impact = 'Low'
                                 else:
                                     impact = 'Low'
                                 
@@ -1228,9 +1331,10 @@ class NewsCog(commands.Cog):
                                 previous_elem = row.find('td', {'class': 'prev'})
                                 previous_str = previous_elem.text.strip() if previous_elem else ''
                                 
+                                # Không skip nữa - lấy tất cả events kể cả không có forecast/previous
                                 # Skip if no forecast AND no previous (nhưng có thể có actual)
-                                if not forecast_str and not previous_str:
-                                    continue
+                                # if not forecast_str and not previous_str:
+                                #     continue
                                 
                                 # Create event ID
                                 event_id = f"investing_{country.replace(' ', '_')}_{event_name.replace(' ', '_')[:30]}_{time_str}"
@@ -1244,7 +1348,7 @@ class NewsCog(commands.Cog):
                                     'actual': actual_str if actual_str else 'N/A',
                                     'forecast': forecast_str if forecast_str else 'N/A',
                                     'previous': previous_str if previous_str else 'N/A',
-                                    'datetime': datetime.now()
+                                    'datetime': datetime.now(VN_TZ)  # UTC+7
                                 }
                                 
                                 economic_updates.append(event)
@@ -1322,12 +1426,15 @@ class NewsCog(commands.Cog):
         """Background task kiểm tra tin tức mới mỗi 5 phút"""
         await self.bot.wait_until_ready()
         
-        last_posts = self.load_last_posts()
+        print(f"🔥 NEWS_CHECKER STARTED at {datetime.now(VN_TZ)}")
+        print(f"🔥 Found {len(self.bot.guilds)} guilds to process")
         
         # Lặp qua tất cả guilds
         for guild in self.bot.guilds:
+            print(f"🔥 Processing guild: {guild.name} (ID: {guild.id})")
             try:
                 config = self.load_news_config(guild.id)
+                last_posts = self.load_last_posts(guild.id)  # ← Load theo guild
                 
                 # Kiểm tra Messari
                 if config['messari_channel']:
@@ -1652,9 +1759,11 @@ class NewsCog(commands.Cog):
                 import traceback
                 traceback.print_exc()
                 continue
-        
-        # Lưu last_posts
-        self.save_last_posts(last_posts)
+            
+            # Lưu last_posts cho guild này
+            print(f"🔹 DEBUG: About to save for guild {guild.id}, last_posts has {len(last_posts.get('messari', []))} messari")
+            self.save_last_posts(last_posts, guild.id)
+            print(f"🔹 DEBUG: Saved completed for guild {guild.id}")
     
     @news_checker.before_loop
     async def before_news_checker(self):
@@ -1692,22 +1801,35 @@ class NewsCog(commands.Cog):
                                 title="📅 Economic Calendar - Lịch Kinh Tế Hôm Nay",
                                 description=f"Các sự kiện kinh tế quan trọng trong ngày {now.strftime('%d/%m/%Y')}",
                                 color=0x3498DB,
-                                timestamp=datetime.now()
+                                timestamp=now  # Đã là UTC+7 từ biến now
                             )
                             
-                            # Phân loại theo impact
+                            # Phân loại theo impact - CHỈ LẤY MEDIUM VÀ HIGH
                             high_impact = [e for e in events if e['impact'] == 'High']
                             medium_impact = [e for e in events if e['impact'] == 'Medium']
                             low_impact = [e for e in events if e['impact'] == 'Low']
                             
+                            print(f"📊 DEBUG Impact: High={len(high_impact)}, Medium={len(medium_impact)}, Low={len(low_impact)}")
+                            
+                            # Debug: In ra 3 events đầu để xem impact
+                            for i, e in enumerate(events[:3]):
+                                print(f"  Event {i+1}: {e.get('event', 'N/A')} - Impact: {e.get('impact', 'N/A')}")
+                            
                             # Thêm High Impact events
                             if high_impact:
                                 high_text = ""
-                                for event in high_impact[:5]:  # Tối đa 5 events
+                                for event in high_impact[:15]:  # Tối đa 15 events
                                     time = event.get('time', 'TBA')
                                     name = event.get('event', 'Unknown')
                                     country = event.get('country', 'N/A')
+                                    # Rút gọn tên nếu quá dài để tránh vượt quá 1024 ký tự
+                                    if len(name) > 60:
+                                        name = name[:57] + "..."
                                     high_text += f"🔴 **{time}** - {name} ({country})\n"
+                                
+                                # Cắt nếu vượt quá giới hạn Discord (1024 chars per field)
+                                if len(high_text) > 1020:
+                                    high_text = high_text[:1020] + "..."
                                 
                                 embed.add_field(
                                     name="🔴 High Impact Events",
@@ -1718,30 +1840,20 @@ class NewsCog(commands.Cog):
                             # Thêm Medium Impact events
                             if medium_impact:
                                 medium_text = ""
-                                for event in medium_impact[:5]:
+                                for event in medium_impact[:15]:  # Tối đa 15 events
                                     time = event.get('time', 'TBA')
                                     name = event.get('event', 'Unknown')
                                     country = event.get('country', 'N/A')
+                                    if len(name) > 60:
+                                        name = name[:57] + "..."
                                     medium_text += f"🟠 **{time}** - {name} ({country})\n"
+                                
+                                if len(medium_text) > 1020:
+                                    medium_text = medium_text[:1020] + "..."
                                 
                                 embed.add_field(
                                     name="🟠 Medium Impact Events",
                                     value=medium_text if medium_text else "Không có",
-                                    inline=False
-                                )
-                            
-                            # Thêm Low Impact events
-                            if low_impact:
-                                low_text = ""
-                                for event in low_impact[:5]:
-                                    time = event.get('time', 'TBA')
-                                    name = event.get('event', 'Unknown')
-                                    country = event.get('country', 'N/A')
-                                    low_text += f"🟢 **{time}** - {name} ({country})\n"
-                                
-                                embed.add_field(
-                                    name="🟢 Low Impact Events",
-                                    value=low_text if low_text else "Không có",
                                     inline=False
                                 )
                             
@@ -1771,6 +1883,121 @@ class NewsCog(commands.Cog):
     async def before_daily_calendar_summary(self):
         """Đợi bot sẵn sàng trước khi chạy task"""
         await self.bot.wait_until_ready()
+    
+    @commands.command(name='testcalendar')
+    @commands.has_permissions(administrator=True)
+    async def test_post_calendar(self, ctx):
+        """Command để test đăng Economic Calendar ngay lập tức"""
+        await ctx.send("📊 Đang lấy dữ liệu Economic Calendar...")
+        
+        try:
+            config = self.load_news_config(ctx.guild.id)
+            
+            if not config or not config.get('economic_calendar_channel'):
+                await ctx.send("❌ Chưa cấu hình Economic Calendar channel!")
+                return
+            
+            channel = self.bot.get_channel(config['economic_calendar_channel'])
+            
+            if not channel:
+                await ctx.send(f"❌ Không tìm thấy channel ID: {config['economic_calendar_channel']}")
+                return
+            
+            # Fetch events
+            events = await self.fetch_economic_calendar()
+            
+            if not events:
+                await ctx.send("⚠️ **Không có sự kiện nào được tìm thấy!**\n\n" +
+                              "Có thể do:\n" +
+                              "• Investing.com chưa cập nhật dữ liệu cho ngày hôm nay\n" +
+                              "• Tất cả events trong ngày đã kết thúc\n" +
+                              "• Lỗi kết nối đến Investing.com\n\n" +
+                              "Hãy thử lại sau ít phút! ⏰")
+                return
+            
+            await ctx.send(f"✅ Đã lấy {len(events)} sự kiện. Đang tạo embed...")
+            
+            # Tạo embed giống hệt daily_calendar_summary
+            from datetime import datetime
+            import pytz
+            
+            vietnam_tz = pytz.timezone('Asia/Ho_Chi_Minh')
+            now = datetime.now(vietnam_tz)
+            
+            embed = discord.Embed(
+                title="📅 Economic Calendar - Lịch Kinh Tế Sắp Tới",
+                description=f"Các sự kiện kinh tế quan trọng từ **{now.strftime('%H:%M')}** trở đi (UTC+7)",
+                color=0x3498DB,
+                timestamp=now
+            )
+            
+            # Phân loại theo impact
+            high_impact = [e for e in events if e['impact'] == 'High']
+            medium_impact = [e for e in events if e['impact'] == 'Medium']
+            low_impact = [e for e in events if e['impact'] == 'Low']
+            
+            await ctx.send(f"📊 Impact breakdown: High={len(high_impact)}, Medium={len(medium_impact)}, Low={len(low_impact)}")
+            
+            # High Impact
+            if high_impact:
+                high_text = ""
+                for event in high_impact[:15]:
+                    time = event.get('time', 'TBA')
+                    name = event.get('event', 'Unknown')
+                    country = event.get('country', 'N/A')
+                    if len(name) > 60:
+                        name = name[:57] + "..."
+                    high_text += f"🔴 **{time}** - {name} ({country})\n"
+                
+                if len(high_text) > 1020:
+                    high_text = high_text[:1020] + "..."
+                
+                embed.add_field(
+                    name="🔴 High Impact Events",
+                    value=high_text if high_text else "Không có",
+                    inline=False
+                )
+            
+            # Medium Impact
+            if medium_impact:
+                medium_text = ""
+                for event in medium_impact[:15]:
+                    time = event.get('time', 'TBA')
+                    name = event.get('event', 'Unknown')
+                    country = event.get('country', 'N/A')
+                    if len(name) > 60:
+                        name = name[:57] + "..."
+                    medium_text += f"🟠 **{time}** - {name} ({country})\n"
+                
+                if len(medium_text) > 1020:
+                    medium_text = medium_text[:1020] + "..."
+                
+                embed.add_field(
+                    name="🟠 Medium Impact Events",
+                    value=medium_text if medium_text else "Không có",
+                    inline=False
+                )
+            
+            # Set author
+            embed.set_author(
+                name="Investing.com Economic Calendar",
+                icon_url="https://www.google.com/s2/favicons?domain=investing.com&sz=128"
+            )
+            
+            # Footer
+            embed.set_footer(
+                text=f"📊 Tổng: {len(events)} sự kiện • Cập nhật lúc {now.strftime('%H:%M')} (UTC+7)",
+                icon_url="https://www.google.com/s2/favicons?domain=investing.com&sz=128"
+            )
+            
+            # Send to calendar channel
+            await channel.send(embed=embed)
+            await ctx.send(f"✅ Đã đăng calendar vào {channel.mention}!")
+            
+        except Exception as e:
+            await ctx.send(f"❌ Lỗi: {str(e)}")
+            import traceback
+            traceback.print_exc()
 
 async def setup(bot):
     """Setup function để load cog"""

@@ -1,43 +1,5 @@
 {
   "guilds": {
-    "829743245838909461": {
-      "messari_channel": 1261675273171112056,
-      "santiment_channel": 1261675273171112056,
-      "rss_feeds": [
-        {
-          "name": "Tin mới nhất - VnExpress RSS",
-          "url": "https://vnexpress.net/rss/tin-moi-nhat.rss",
-          "channel_id": 1261675273171112056
-        },
-        {
-          "name": "BBC News",
-          "url": "https://feeds.bbci.co.uk/news/rss.xml",
-          "channel_id": 1261675273171112056
-        },
-        {
-          "name": "Cointelegraph.com News",
-          "url": "https://cointelegraph.com/rss",
-          "channel_id": 1261675273171112056
-        },
-        {
-          "name": "Cointelegraph - Blockchain",
-          "url": "https://cointelegraph.com/rss/tag/blockchain",
-          "channel_id": 1261675273171112056
-        },
-        {
-          "name": "Cointelegraph - Market Analysis",
-          "url": "https://cointelegraph.com/rss/category/market-analysis",
-          "channel_id": 1261675273171112056
-        },
-        {
-          "name": "Decrypt",
-          "url": "https://decrypt.co/feed",
-          "channel_id": 1261675273171112056
-        }
-      ],
-      "5phutcrypto_channel": 1261675273171112056,
-      "economic_calendar_channel": 1261675273171112056
-    },
     "1394159510725070961": {
       "messari_channel": 1435655446328250380,
       "santiment_channel": 1435655670820241491,
@@ -55,11 +17,6 @@
           "channel_id": 1435655410328670288
         },
         {
-          "name": "Cointelegraph.com News",
-          "url": "https://cointelegraph.com/rss",
-          "channel_id": 1435655410328670288
-        },
-        {
           "name": "Cointelegraph - Blockchain",
           "url": "https://cointelegraph.com/rss/tag/blockchain",
           "channel_id": 1435657029833461800
@@ -73,6 +30,16 @@
           "name": "Decrypt",
           "url": "https://decrypt.co/feed",
           "channel_id": 1435657029833461800
+        },
+        {
+          "name": "VNEconomy",
+          "url": "https://vneconomy.vn/macro-economy.rss",
+          "channel_id": 1435655410328670288
+        },
+        {
+          "name": "CafeF",
+          "url": "https://cafef.vn/vi-mo-dau-tu.rss",
+          "channel_id": 1435655410328670288
         }
       ]
     }
