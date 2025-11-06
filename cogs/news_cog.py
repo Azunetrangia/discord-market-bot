@@ -5,6 +5,7 @@ import feedparser
 import json
 import os
 import re
+import html
 from datetime import datetime, timedelta
 import asyncio
 from deep_translator import GoogleTranslator
@@ -1631,12 +1632,16 @@ class NewsCog(commands.Cog):
                                     
                                     # Lấy title và description gốc
                                     original_title = entry.get('title', 'Không có tiêu đề')
+                                    # Decode HTML entities (&#244; -> ô, &#225; -> á, etc.)
+                                    original_title = html.unescape(original_title)
                                     if len(original_title) > 250:
                                         original_title = original_title[:247] + '...'
                                     
                                     # Mô tả với định dạng đẹp - loại bỏ HTML tags
                                     original_description = entry.get('summary', entry.get('description', ''))
                                     if original_description:
+                                        # Decode HTML entities trước
+                                        original_description = html.unescape(original_description)
                                         # Loại bỏ tất cả HTML tags bằng regex
                                         original_description = re.sub(r'<[^>]+>', '', original_description)
                                         # Xóa nhiều khoảng trắng liên tiếp
