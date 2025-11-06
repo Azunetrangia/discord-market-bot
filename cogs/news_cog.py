@@ -1801,6 +1801,11 @@ class NewsCog(commands.Cog):
                         
                         for event in events:
                             event_id = event.get('id')
+                            impact = event.get('impact', 'Low')
+                            
+                            # Filter: Chỉ đăng Medium và High impact events
+                            if impact not in ['Medium', 'High']:
+                                continue
                             
                             # Kiểm tra xem đã thông báo event này chưa
                             if event_id not in last_posts.get('economic_events', []):
