@@ -1804,34 +1804,8 @@ class NewsCog(commands.Cog):
                                 if len(last_posts['theblock']) > 100:
                                     last_posts['theblock'] = last_posts['theblock'][-100:]
                 
-                # Kiểm tra Economic Calendar (FRED Data)
-                if config.get('economic_calendar_channel'):
-                    channel = self.bot.get_channel(config['economic_calendar_channel'])
-                    if channel:
-                        events = await self.fetch_economic_calendar()
-                        
-                        for event in events:
-                            event_id = event.get('id')
-                            impact = event.get('impact', 'Low')
-                            
-                            # Filter: Chỉ đăng Medium và High impact events
-                            if impact not in ['Medium', 'High']:
-                                continue
-                            
-                            # Kiểm tra xem đã thông báo event này chưa
-                            if event_id not in last_posts.get('economic_events', []):
-                                # Chưa thông báo, gửi thông báo
-                                await self.send_economic_event_update(channel, event, is_update=False)
-                                
-                                # Lưu vào danh sách đã thông báo
-                                if 'economic_events' not in last_posts:
-                                    last_posts['economic_events'] = []
-                                
-                                last_posts['economic_events'].append(event_id)
-                                
-                                # Giữ tối đa 100 events
-                                if len(last_posts['economic_events']) > 100:
-                                    last_posts['economic_events'] = last_posts['economic_events'][-100:]
+                # NOTE: Economic Calendar đã được chuyển sang Dynamic Scheduler
+                # Xem economic_calendar_scheduler task thay vì polling ở đây
                 
                 # Kiểm tra RSS Feeds
                 for feed_config in config['rss_feeds']:
