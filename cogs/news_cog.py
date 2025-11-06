@@ -1338,8 +1338,13 @@ class NewsCog(commands.Cog):
             
             traceback.print_exc()
     
-    async def fetch_economic_calendar(self):
-        """Lấy dữ liệu kinh tế từ Investing.com (có đầy đủ Forecast/Actual/Previous)"""
+    async def fetch_economic_calendar(self, use_alert_window=True):
+        """Lấy dữ liệu kinh tế từ Investing.com (có đầy đủ Forecast/Actual/Previous)
+        
+        Args:
+            use_alert_window: Nếu True, chỉ lấy events trong [now-5min, now+10min] (cho background task)
+                            Nếu False, lấy TẤT CẢ events từ now → 23:59 (cho !testcalendar)
+        """
         try:
             from bs4 import BeautifulSoup
             import aiohttp
@@ -1392,15 +1397,21 @@ class NewsCog(commands.Cog):
                                     event_dt_vn_naive = event_dt_utc5 + timedelta(hours=12)
                                     event_dt_vn = vietnam_tz.localize(event_dt_vn_naive)
                                     
-                                    # Filter: Chỉ lấy events trong alert window (5 phút trước -> 10 phút tới)
-                                    # - Pre-alert: Post trước 5 phút để user chuẩn bị
-                                    # - Update: Post khi có actual value (trong vòng 5 phút sau event)
-                                    alert_start = now_vn - timedelta(minutes=5)  # 5 phút trước
-                                    alert_end = now_vn + timedelta(minutes=10)   # 10 phút tới
-                                    
-                                    # Skip events ngoài alert window
-                                    if event_dt_vn < alert_start or event_dt_vn > alert_end:
-                                        continue
+                                    if use_alert_window:
+                                        # Background task: Chỉ lấy events trong window [now-5min, now+10min]
+                                        # - Pre-alert: Post trước 5 phút để user chuẩn bị
+                                        # - Update: Post khi có actual value (trong vòng 5 phút sau event)
+                                        alert_start = now_vn - timedelta(minutes=5)  # 5 phút trước
+                                        alert_end = now_vn + timedelta(minutes=10)   # 10 phút tới
+                                        
+                                        # Skip events ngoài alert window
+                                        if event_dt_vn < alert_start or event_dt_vn > alert_end:
+                                            continue
+                                    else:
+                                        # !testcalendar: Lấy TẤT CẢ events từ now → 23:59
+                                        # Chỉ skip events ĐÃ QUA
+                                        if event_dt_vn < now_vn:
+                                            continue
                                     
                                     # Format time for display with date if not today
                                     if event_dt_vn.date() == today_vn:
@@ -2119,8 +2130,8 @@ class NewsCog(commands.Cog):
                 await ctx.send(f"❌ Không tìm thấy channel ID: {config['economic_calendar_channel']}")
                 return
             
-            # Fetch events
-            events = await self.fetch_economic_calendar()
+            # Fetch events - KHÔNG dùng alert window, lấy TẤT CẢ events tương lai
+            events = await self.fetch_economic_calendar(use_alert_window=False)
             
             if not events:
                 await ctx.send("⚠️ **Không có sự kiện nào được tìm thấy!**\n\n" +
