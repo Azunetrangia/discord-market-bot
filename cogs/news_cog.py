@@ -1203,6 +1203,25 @@ class NewsCog(commands.Cog):
             impact = event.get('impact', 'Unknown')
             time_str = event.get('time', 'N/A')
             
+            # Lấy 3 giá trị: Forecast, Actual, Previous
+            forecast = event.get('forecast', 'N/A')
+            actual = event.get('actual', 'N/A')
+            previous = event.get('previous', 'N/A')
+            
+            # Xác định event status
+            from datetime import datetime
+            import pytz
+            vietnam_tz = pytz.timezone('Asia/Ho_Chi_Minh')
+            now = datetime.now(vietnam_tz)
+            now_time = now.strftime('%H:%M')
+            
+            # Parse event time to compare
+            try:
+                event_time = time_str
+                is_upcoming = event_time > now_time
+            except:
+                is_upcoming = True  # Default to upcoming if can't parse
+            
             # Màu sắc theo impact
             color_map = {
                 'High': 0xFF4444,      # Đỏ đậm
@@ -1219,8 +1238,19 @@ class NewsCog(commands.Cog):
             }
             icon = icon_map.get(impact, '⚪')
             
-            # Title
-            title = f"{event_name}"
+            # Title với status indicator
+            if is_upcoming and actual == 'N/A':
+                # Pre-event alert (chưa diễn ra)
+                title = f"⏰ Sắp diễn ra: {event_name}"
+                status_emoji = "🔔"
+            elif actual != 'N/A':
+                # Event đã có kết quả
+                title = f"✅ Đã công bố: {event_name}"
+                status_emoji = "📊"
+            else:
+                # Event đang diễn ra hoặc chưa có kết quả
+                title = f"⏳ {event_name}"
+                status_emoji = "⏰"
             
             # Tạo embed
             embed = discord.Embed(
@@ -1229,37 +1259,39 @@ class NewsCog(commands.Cog):
                 timestamp=datetime.now(VN_TZ)  # UTC+7
             )
             
-            # Lấy 3 giá trị: Forecast, Actual, Previous
-            forecast = event.get('forecast', 'N/A')
-            actual = event.get('actual', 'N/A')
-            previous = event.get('previous', 'N/A')
-            
             # Tạo field hiển thị đầy đủ 3 giá trị
             comparison_text = f"```diff\n"
             
             # Hiển thị Forecast
-            comparison_text += f"  📊 Forecast:  {forecast}\n"
+            if forecast != 'N/A':
+                comparison_text += f"  📊 Forecast:  {forecast}\n"
             
             # Hiển thị Actual với màu (+ nếu tăng so với previous, - nếu giảm)
-            try:
-                # Thử parse để so sánh
-                actual_num = float(str(actual).replace('%', '').replace('K', '').replace('M', '').replace('B', '').replace(',', '').strip()) if actual != 'N/A' else None
-                previous_num = float(str(previous).replace('%', '').replace('K', '').replace('M', '').replace('B', '').replace(',', '').strip()) if previous != 'N/A' else None
-                
-                if actual_num is not None and previous_num is not None:
-                    if actual_num > previous_num:
-                        comparison_text += f"+ 📈 Actual:    {actual}\n"
-                    elif actual_num < previous_num:
-                        comparison_text += f"- 📉 Actual:    {actual}\n"
+            if actual != 'N/A':
+                try:
+                    # Thử parse để so sánh
+                    actual_num = float(str(actual).replace('%', '').replace('K', '').replace('M', '').replace('B', '').replace(',', '').strip()) if actual != 'N/A' else None
+                    previous_num = float(str(previous).replace('%', '').replace('K', '').replace('M', '').replace('B', '').replace(',', '').strip()) if previous != 'N/A' else None
+                    
+                    if actual_num is not None and previous_num is not None:
+                        if actual_num > previous_num:
+                            comparison_text += f"+ 📈 Actual:    {actual}\n"
+                        elif actual_num < previous_num:
+                            comparison_text += f"- 📉 Actual:    {actual}\n"
+                        else:
+                            comparison_text += f"  📊 Actual:    {actual}\n"
                     else:
                         comparison_text += f"  📊 Actual:    {actual}\n"
-                else:
+                except:
                     comparison_text += f"  📊 Actual:    {actual}\n"
-            except:
-                comparison_text += f"  📊 Actual:    {actual}\n"
+            else:
+                # Chưa có actual - đây là pre-event alert
+                comparison_text += f"  ⏳ Actual:    Chưa công bố\n"
             
             # Hiển thị Previous
-            comparison_text += f"  📋 Previous:  {previous}\n"
+            if previous != 'N/A':
+                comparison_text += f"  📋 Previous:  {previous}\n"
+            
             comparison_text += f"```"
             
             embed.add_field(
@@ -1271,6 +1303,12 @@ class NewsCog(commands.Cog):
             # Thông tin chi tiết
             info_text = f"⏰ **Time:** {time_str}\n"
             info_text += f"🌍 **Country:** {country}\n"
+            
+            # Thêm countdown nếu là upcoming event
+            if is_upcoming and actual == 'N/A':
+                info_text += f"\n{status_emoji} **Status:** Sắp diễn ra trong vài phút\n"
+            elif actual != 'N/A':
+                info_text += f"\n{status_emoji} **Status:** Đã công bố kết quả\n"
             
             embed.add_field(
                 name="ℹ️ Details",
@@ -1285,7 +1323,7 @@ class NewsCog(commands.Cog):
             )
             
             # Footer
-            footer_text = "📊 Federal Reserve Economic Data (FRED) • Official Data"
+            footer_text = "📊 Economic Calendar • Real-time Updates"
             embed.set_footer(
                 text=footer_text,
                 icon_url="https://www.google.com/s2/favicons?domain=stlouisfed.org&sz=128"
@@ -1354,9 +1392,12 @@ class NewsCog(commands.Cog):
                                     event_dt_vn_naive = event_dt_utc5 + timedelta(hours=12)
                                     event_dt_vn = vietnam_tz.localize(event_dt_vn_naive)
                                     
-                                    # Filter: CHỈ LẤY EVENTS CHƯA DIỄN RA (từ giờ hiện tại trở đi)
-                                    # Không filter theo ngày nữa - lấy tất cả events tương lai kể cả ngày mai
-                                    if event_dt_vn < now_vn:
+                                    # Filter: Lấy events trong khoảng 5 phút trước -> tương lai
+                                    # Alert window: Đăng tin TRƯỚC 5 phút để user chuẩn bị
+                                    alert_window = now_vn - timedelta(minutes=5)
+                                    
+                                    # Skip events quá cũ (trước 5 phút)
+                                    if event_dt_vn < alert_window:
                                         continue
                                     
                                     # Format time for display with date if not today
