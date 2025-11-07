@@ -875,14 +875,16 @@ class NewsCog(commands.Cog):
         
         # Khởi động background tasks
         self.news_checker.start()
-        self.daily_calendar_summary.start()
-        self.economic_calendar_scheduler.start()  # New: Dynamic scheduler
+        # Tắt scheduler - chỉ dùng polling mỗi 3 phút
+        # self.daily_calendar_summary.start()
+        # self.economic_calendar_scheduler.start()
         
     def cog_unload(self):
         """Dừng task khi cog unload"""
         self.news_checker.cancel()
-        self.daily_calendar_summary.cancel()
-        self.economic_calendar_scheduler.cancel()
+        # Tắt scheduler - chỉ dùng polling mỗi 3 phút
+        # self.daily_calendar_summary.cancel()
+        # self.economic_calendar_scheduler.cancel()
         
         # Cancel all scheduled event tasks
         for task in self.event_tasks:
@@ -1789,7 +1791,7 @@ class NewsCog(commands.Cog):
         
         return []
     
-    @tasks.loop(minutes=5)
+    @tasks.loop(minutes=3)
     async def news_checker(self):
         """Background task kiểm tra tin tức mới mỗi 5 phút"""
         print(f"🔥 NEWS_CHECKER STARTED at {datetime.now(VN_TZ)}")
@@ -2007,8 +2009,26 @@ class NewsCog(commands.Cog):
                                 if len(last_posts['theblock']) > 100:
                                     last_posts['theblock'] = last_posts['theblock'][-100:]
                 
-                # NOTE: Economic Calendar đã được chuyển sang Dynamic Scheduler
-                # Xem economic_calendar_scheduler task thay vì polling ở đây
+                # Kiểm tra Economic Calendar (polling mỗi 3 phút)
+                if config.get('economic_calendar_channel'):
+                    channel = self.bot.get_channel(config['economic_calendar_channel'])
+                    if channel:
+                        events = await self.fetch_economic_calendar()
+                        for event in events:
+                            event_id = event.get('id')
+                            
+                            # Chỉ post Medium và High impact
+                            # Chỉ post nếu có actual value (chưa post trước đó)
+                            actual = event.get('actual', 'N/A')
+                            if event.get('impact') in ['Medium', 'High'] and actual and actual != 'N/A':
+                                if event_id not in last_posts['economic_events']:
+                                    await self.send_economic_event_update(channel, event, is_update=False)
+                                    
+                                    # Lưu ID
+                                    last_posts['economic_events'].append(event_id)
+                                    # Giữ tối đa 200 IDs
+                                    if len(last_posts['economic_events']) > 200:
+                                        last_posts['economic_events'] = last_posts['economic_events'][-200:]
                 
                 # Kiểm tra RSS Feeds
                 for feed_config in config['rss_feeds']:
