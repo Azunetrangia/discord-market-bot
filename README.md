@@ -22,14 +22,13 @@ Bot Discord chuyên nghiệp tổng hợp tin tức kinh tế & crypto tự đ�
 - Chống trùng lặp tin thông minh
 
 ### 📅 Economic Calendar
-- **Dynamic Scheduler**: Scheduled tasks post events at exact time (not polling)
-- **Investing.com scraper**: Lịch kinh tế tự động
+- **Polling-based (3-minute loop)**: Bot polls Investing.com every 3 minutes to discover Medium/High impact events.
+- **Investing.com scraper**: Lấy dữ liệu lịch kinh tế và chuyển về UTC+7 để hiển thị.
 - **Timezone UTC+7**: Hiển thị giờ Việt Nam
-- **Scheduling**: Daily summary at 07:00 UTC+7; per-event checks at T+0 / T+2 / T+5 with retry policy (no pre-alerts or backfill)
-- **Actual Value Tracking**: Check at T+0, T+5, T+10 minutes
-- **Smart Retry**: Chỉ post khi actual value tồn tại
-- **Filter Impact**: Chỉ High & Medium events
-- **Daily Summary & Scheduler**: Gửi tổng hợp hàng ngày lúc 07:00 UTC+7 và tạo các kiểm tra per-event (T+0/T+2/T+5). Không sử dụng pre-alert/backfill.
+- **Behavior**: Bot sends a daily summary at 07:00 UTC+7 and continuously polls for upcoming events. It will:
+  - Post a pre-alert for events that fall within the configured pre-alert window (default: 30 minutes; may be adjusted for testing).
+  - Post the actual/result only when Investing.com provides a non-"N/A" actual value.
+  - Filter events: only Medium and High impact events are considered.
 - Test commands: `!testcalendar`, `!schedulenow` (Admin only)
 
 ## 🚀 Cài đặt
@@ -201,9 +200,9 @@ Nhấn **[Economic Calendar]** để cấu hình lịch kinh tế:
   • Lịch kinh tế tự động từ Investing.com
   • 🕐 Hiển thị giờ UTC+7 (Việt Nam)
   • 🔴 High & 🟠 Medium impact events
-  • ⏰ No pre-alerts. Bot sends a daily summary at 07:00 UTC+7 and performs per-event re-checks at T+0/T+2/T+5 minutes.
-  • ✅ Post actual value ngay khi có
-  • 🔄 Auto retry at T+5, T+10 minutes
+  • ⏰ Bot polls Investing.com every 3 minutes and sends a daily summary at 07:00 UTC+7.
+  • ✅ Bot posts actual value ngay khi có (chỉ khi `actual` khác "N/A").
+  • 🔄 The bot retries checking event results; exact retry windows may vary by configuration.
   
 💡 Cách dùng: Chọn channel Discord để nhận lịch kinh tế
 ```
@@ -215,13 +214,8 @@ Nhấn **[Economic Calendar]** để cấu hình lịch kinh tế:
   • !schedulenow   - Trigger scheduler ngay lập tức
 ```
 
-**New: Dynamic Scheduler** 🎯
-- Scheduler chạy mỗi ngày lúc 00:00 UTC+7
-- Tạo scheduled tasks cho từng event
-- Post chính xác vào đúng thời điểm (không polling)
-- No pre-alerts: the bot will not post pre-event alerts. It posts a daily summary at 07:00 and then does targeted re-checks around each event time.
-- Actual value checks: T+0, T+5, T+10
-- Chỉ post khi actual value tồn tại
+**Note on scheduler**
+- The project previously experimented with a dynamic scheduler that created per-event scheduled tasks. The current, stable implementation uses a polling loop (every 3 minutes) plus a daily summary at 07:00 UTC+7. Use `!schedulenow` to trigger a scheduler-like flow manually for testing.
 
 ---
 
@@ -291,19 +285,14 @@ Bot chạy background tasks tự động:
 - Kiểm tra 5phutcrypto.io
 - Kiểm tra The Block RSS
 - Kiểm tra tất cả RSS Feeds
-- ~~Kiểm tra Economic Calendar~~ (Đã chuyển sang Dynamic Scheduler)
+- Kiểm tra Economic Calendar (polling mỗi 3 phút)
 - So sánh với `last_post_ids` per-guild để chống trùng
 - Đăng tin mới vào kênh đã cấu hình
 - **Multi-guild support**: Xử lý từng guild độc lập
 
-### 📅 Economic Calendar Scheduler (Mỗi ngày lúc 00:00 UTC+7)
-- Fetch tất cả events trong ngày từ Investing.com
-- Tạo dynamic scheduled tasks cho mỗi event
-- **Per-event checks**: The scheduler sets targeted checks at event time and shortly after (T+0, T+2, T+5). Retry policy: T+0 for all events, T+2 for Medium/High, T+5 for High only.
-- **Actual check tasks**: Schedule check tại T+0, T+5, T+10 (✅)
-- Chỉ post khi actual value tồn tại (không post "N/A")
-- Auto cancel và reset tasks mỗi ngày
-- **Commands**: `!schedulenow` để trigger ngay lập tức
+### 📅 Economic Calendar (Daily Summary)
+- Daily summary: sent at 07:00 UTC+7 covering today's Medium/High events.
+- Per-event scheduling: the previous dynamic scheduler is disabled in favor of the polling loop; `!schedulenow` can be used to trigger fetch + summary + scheduling for tests.
 
 ### 📊 Daily Calendar Summary (7:00 AM UTC+7)
 - Gửi tổng hợp lịch kinh tế cho cả ngày
@@ -422,38 +411,11 @@ Nếu có vấn đề hoặc câu hỏi:
 
 ### Version 1.3.0 (November 6, 2025)
 
-#### 🎯 Major Changes: Economic Calendar Dynamic Scheduler
+#### 🎯 Major Changes: Economic Calendar behavior
 
-- ✅ **Dynamic Scheduled Tasks**: Replaced 5-minute polling with precise event scheduling
-  - Each event gets dedicated scheduled tasks
-  - Pre-alert posted exactly 5 minutes before event time
-  - Actual value checks at T+0, T+5, T+10 minutes
-  - Only posts when actual value exists (no more "N/A" posts)
-  
-- ✅ **Scheduler Architecture**:
-  - `economic_calendar_scheduler`: Runs daily at 00:00 UTC+7
-  - Fetches all events for the day from Investing.com
-  - Creates asyncio tasks for each Medium/High impact event
-  - Auto-cancels and resets tasks daily
-  
-- ✅ **Smart Tracking**:
-  - `scheduled_events` dictionary tracks pre_alert_posted and actual_posted
-  - Prevents duplicate posts across retry checks
-  - Resets daily at midnight
-  
-- ✅ **New Commands**:
-  - `!schedulenow` - Trigger scheduler immediately (admin, for testing)
-  - Existing `!testcalendar` still works for calendar overview
-  
-- ✅ **Performance Benefits**:
-  - CPU usage: Only at event times (vs constant polling)
-  - Timing accuracy: ±1 second (vs 0-5 minute delay)
-  - Memory efficient: ~90 KB for 15 events
-  
-- 📚 **Documentation**:
-  - Added `docs/ECONOMIC_CALENDAR_SCHEDULER.md` - Full architecture guide
-  - Added `tests/test_scheduler_timing.py` - Timing validation
-  - Updated README with new scheduler info
+- ✅ Updated economic calendar flow: the project experimented with a dynamic per-event scheduler, but the stable implementation uses a polling loop (every 3 minutes) plus a daily summary at 07:00 UTC+7. This change improves robustness in environments where precise scheduling or long-lived tasks may be unreliable.
+- ✅ The bot posts pre-alerts for upcoming Medium/High events (within the configured pre-alert window) and posts actual values only when Investing.com provides non-"N/A" results.
+- ✅ Admin test command `!schedulenow` remains available to trigger an immediate fetch + summary + schedule flow for testing.
 
 ### Version 1.2.0 (November 6, 2025)
 
