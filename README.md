@@ -18,7 +18,7 @@ Bot Discord chuyên nghiệp tổng hợp tin tức kinh tế & crypto tự đ�
 - **Tự động dịch**: Tin nước ngoài → Tiếng Việt
 - **Phát hiện ngôn ngữ**: Không dịch nguồn tiếng Việt
 - **HTML entities decode**: Hiển thị tiếng Việt chuẩn
-- Tự động đăng tin mới mỗi 5 phút
+- Tự động đăng tin mới mỗi 3 phút
 - Chống trùng lặp tin thông minh
 
 ### 📅 Economic Calendar
@@ -59,7 +59,8 @@ Chỉnh sửa file `.env` với các thông tin của bạn:
 
 ```env
 # Discord Bot Token (từ Discord Developer Portal)
-DISCORD_BOT_TOKEN=your_discord_bot_token_here
+# NOTE: The bot reads `DISCORD_TOKEN` from .env (see .env.example)
+DISCORD_TOKEN=your_discord_bot_token_here
 
 # API Keys (Optional - nếu sử dụng tính năng tương ứng)
 SANTIMENT_API_KEY=your_santiment_api_key_here
@@ -237,7 +238,7 @@ Bot tự động kiểm tra và đăng tin mới mỗi **5 phút** ⏰:
 | �📅 **Economic Calendar** | Lịch kinh tế (UTC+7) | ❌ Không |
 | 📡 **RSS Feeds** | Nguồn tùy chỉnh | 🌐 Auto-detect |
 
-> **💡 Admin Tip**: Dùng lệnh `!testcalendar` để test Economic Calendar ngay lập tức (không cần đợi 5 phút)
+> **💡 Admin Tip**: Dùng lệnh `!testcalendar` để test Economic Calendar ngay lập tức (không cần đợi 3 phút)
 
 ## 📁 Cấu trúc Project
 
@@ -284,7 +285,7 @@ discord-bot/
 
 Bot chạy background tasks tự động:
 
-### 📰 News Checker (Mỗi 5 phút)
+### 📰 News Checker (Mỗi 3 phút)
 - Kiểm tra Glassnode Insights RSS
 - Kiểm tra Santiment API
 - Kiểm tra 5phutcrypto.io
@@ -356,7 +357,7 @@ Bot hỗ trợ nhiều Discord servers:
 - Kiểm tra API keys trong `.env`
 - Kiểm tra channels đã được cấu hình trong `data/news_config.json`
 - Xem console logs để debug
-- Đợi 5 phút cho vòng lặp tiếp theo
+- Đợi 3 phút cho vòng lặp tiếp theo
 - Verify bot có quyền `Send Messages`, `Embed Links` trong channel
 
 ### Economic Calendar không có events

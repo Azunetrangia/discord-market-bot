@@ -131,6 +131,6 @@ nohup python main_bot.py > bot_console.log 2>&1 &
 ## 📌 Notes
 
 - Bot chạy scheduler tự động mỗi ngày lúc 00:00 UTC+7
-- Pre-alert được gửi trước event 5 phút
+- Pre-alert được gửi trước event (mặc định 30 phút). NOTE: Trong môi trường test, window pre-alert có thể được mở rộng để thuận tiện.
 - Actual checks chạy tại T+0, T+5, T+10 phút sau event
 - Backfill chỉ chạy khi bot khởi động hoặc khi gọi `!schedulenow`

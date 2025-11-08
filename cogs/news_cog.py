@@ -1613,16 +1613,26 @@ class NewsCog(commands.Cog):
                                         if time_diff > 300:  # 5 minutes = 300 seconds
                                             continue
                                     else:
-                                        # Daily summary fetch: Get all events from now until 4:30 AM next day
+                                        # Daily summary fetch: Get all events from now until end of tomorrow (48 hours)
                                         now_vn = datetime.now(vietnam_tz)
                                         
-                                        # Calculate end time: 4:30 AM next day
-                                        next_day = now_vn + timedelta(days=1)
-                                        end_time = vietnam_tz.localize(datetime(next_day.year, next_day.month, next_day.day, 4, 30))
+                                        # Calculate end time: 48 hours from now để bao gồm events của cả hôm nay và ngày mai
+                                        end_time = now_vn + timedelta(hours=48)
                                         
-                                        # Skip events that already passed or are beyond 4:30 AM tomorrow
+                                        # Debug logging (chỉ hiện 3 events đầu để tránh spam)
+                                        if len(economic_updates) < 3:
+                                            print(f"🔍 Event: {event_datetime_str} -> VN: {event_dt_vn.strftime('%Y-%m-%d %H:%M')}")
+                                            print(f"   Now: {now_vn.strftime('%Y-%m-%d %H:%M')}, End: {end_time.strftime('%Y-%m-%d %H:%M')}")
+                                            print(f"   Passed? {event_dt_vn < now_vn}, Beyond? {event_dt_vn > end_time}")
+                                        
+                                        # Skip events that already passed or are beyond 48 hours
                                         if event_dt_vn < now_vn or event_dt_vn > end_time:
+                                            if len(economic_updates) < 3:
+                                                print(f"   ❌ SKIPPED")
                                             continue
+                                        
+                                        if len(economic_updates) < 3:
+                                            print(f"   ✅ INCLUDED")
                                     
                                     # Format time for display
                                     vietnam_tz = pytz.timezone('Asia/Ho_Chi_Minh')
@@ -2014,21 +2024,74 @@ class NewsCog(commands.Cog):
                     channel = self.bot.get_channel(config['economic_calendar_channel'])
                     if channel:
                         events = await self.fetch_economic_calendar()
+                        
+                        # Get current time in UTC+7
+                        vietnam_tz = pytz.timezone('Asia/Ho_Chi_Minh')
+                        now_vn = datetime.now(vietnam_tz)
+                        
                         for event in events:
                             event_id = event.get('id')
+                            event_time_str = event.get('time', '')
                             
-                            # Chỉ post Medium và High impact
-                            # Chỉ post nếu có actual value (chưa post trước đó)
-                            actual = event.get('actual', 'N/A')
-                            if event.get('impact') in ['Medium', 'High'] and actual and actual != 'N/A':
-                                if event_id not in last_posts['economic_events']:
-                                    await self.send_economic_event_update(channel, event, is_update=False)
+                            # Skip nếu không có impact Medium hoặc High
+                            if event.get('impact') not in ['Medium', 'High']:
+                                continue
+                            
+                            # Parse event time để xác định xem có nên post pre-alert hay không
+                            should_post_prealert = False
+                            should_post_actual = False
+                            
+                            try:
+                                # Parse time (format: "HH:MM" hoặc "dd/mm HH:MM")
+                                if '/' in event_time_str:
+                                    # Format: dd/mm HH:MM (next day)
+                                    parsed = datetime.strptime(event_time_str, '%d/%m %H:%M')
+                                    event_dt = vietnam_tz.localize(datetime(now_vn.year, parsed.month, parsed.day, parsed.hour, parsed.minute))
+                                else:
+                                    # Format: HH:MM (today or tomorrow)
+                                    parsed = datetime.strptime(event_time_str, '%H:%M')
+                                    event_dt = vietnam_tz.localize(datetime(now_vn.year, now_vn.month, now_vn.day, parsed.hour, parsed.minute))
                                     
-                                    # Lưu ID
-                                    last_posts['economic_events'].append(event_id)
-                                    # Giữ tối đa 200 IDs
-                                    if len(last_posts['economic_events']) > 200:
-                                        last_posts['economic_events'] = last_posts['economic_events'][-200:]
+                                    # If time already passed today, assume it's tomorrow
+                                    if event_dt < now_vn:
+                                        event_dt = event_dt + timedelta(days=1)
+                                
+                                # Check if within pre-alert window (30 phút trước event)
+                                time_until_event = (event_dt - now_vn).total_seconds() / 60  # phút
+                                
+                                # Post pre-alert nếu:
+                                # - Event chưa diễn ra (time_until_event > 0)
+                                # - Trong vòng 30 phút tới (hoặc 24 giờ để test dễ hơn)
+                                # - Chưa post pre-alert cho event này
+                                pre_alert_id = f"{event_id}_prealert"
+                                # Tăng window lên 24 giờ (1440 phút) để dễ test
+                                if 0 < time_until_event <= 1440 and pre_alert_id not in last_posts['economic_events']:
+                                    should_post_prealert = True
+                                
+                                # Post actual nếu có actual value và chưa post
+                                actual = event.get('actual', 'N/A')
+                                if actual and actual != 'N/A' and event_id not in last_posts['economic_events']:
+                                    should_post_actual = True
+                                    
+                            except Exception as e:
+                                print(f"Error parsing event time for {event.get('event', 'N/A')}: {e}")
+                                continue
+                            
+                            # Post pre-alert
+                            if should_post_prealert:
+                                await self.send_economic_event_update(channel, event, is_update=False)
+                                last_posts['economic_events'].append(pre_alert_id)
+                                print(f"📢 Posted pre-alert for: {event.get('event', 'N/A')} at {event_time_str}")
+                            
+                            # Post actual result
+                            if should_post_actual:
+                                await self.send_economic_event_update(channel, event, is_update=True)
+                                last_posts['economic_events'].append(event_id)
+                                print(f"✅ Posted actual result for: {event.get('event', 'N/A')}")
+                            
+                            # Giữ tối đa 200 IDs
+                            if len(last_posts['economic_events']) > 200:
+                                last_posts['economic_events'] = last_posts['economic_events'][-200:]
                 
                 # Kiểm tra RSS Feeds
                 for feed_config in config['rss_feeds']:
