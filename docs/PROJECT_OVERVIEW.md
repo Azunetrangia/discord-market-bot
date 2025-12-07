@@ -24,7 +24,7 @@ Tạo một Discord Bot đa chức năng với giao diện tương tác hiện �
 - Rich Embeds với màu sắc
 
 #### 3. **Multi-source News Aggregation** 📰
-- Messari API - Market news
+- Glassnode Insights (RSS) - Market & on-chain insights
 - Santiment API - On-chain analytics
 - Custom RSS Feeds - Any source
 - Auto-post mỗi 10 phút
@@ -38,7 +38,7 @@ Tạo một Discord Bot đa chức năng với giao diện tương tác hiện �
 - 60-second check interval
 
 #### 5. **Professional Charts** 📊
-- Matplotlib-powered
+ - Matplotlib-powered
 - 7-day price history
 - Target price visualization
 - Current price marker
@@ -63,7 +63,7 @@ discord-bot/
 │   │   ├── ChannelSelectView     # Chọn channel
 │   │   ├── RemoveRSSView         # Xóa RSS
 │   │   ├── NewsCog               # Cog class
-│   │   ├── fetch_messari_news()  # Messari API
+│   │   ├── fetch_glassnode_insights()  # Glassnode (RSS)
 │   │   ├── fetch_santiment_news()# Santiment API
 │   │   ├── fetch_rss_feed()      # RSS parser
 │   │   └── @tasks.loop(10min)    # Background checker
@@ -126,7 +126,7 @@ User Input → AddAlertModal → Validate Ticker → Save to alerts.json
 
 | API | Purpose | Rate Limit | Endpoint |
 |-----|---------|------------|----------|
-| **Messari** | Crypto market news | 20/min (free) | `/api/v1/news` |
+| **Glassnode (RSS)** | Crypto market & on-chain insights | RSS | `https://insights.glassnode.com/feed/` |
 | **Santiment** | On-chain analytics | 300/month (free) | GraphQL `/graphql` |
 | **CoinGecko** | Price data & charts | 500/min (demo) | `/simple/price`, `/market_chart` |
 | **RSS** | Custom news feeds | Unlimited | Various |
@@ -141,7 +141,7 @@ User Input → AddAlertModal → Validate Ticker → Save to alerts.json
 **APIs:**
 - pycoingecko (CoinGecko wrapper)
 - feedparser (RSS parser)
-- Direct HTTP calls (Messari, Santiment)
+-- Direct HTTP calls (Santiment)
 
 **Visualization:**
 - matplotlib (Charts)
@@ -242,7 +242,7 @@ Config   Select   & Save           Alert
 - [ ] `/start` command works
 - [ ] News menu displays
 - [ ] Alerts menu displays
-- [ ] Can add Messari channel
+- [ ] Can add Glassnode channel
 - [ ] Can add Santiment channel
 - [ ] Can add RSS feed
 - [ ] Can remove RSS feed

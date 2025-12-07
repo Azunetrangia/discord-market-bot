@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-section">
+    <h2>🏰 Guild Configurations</h2>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Guild ID</th>
+                <th>Glassnode Channel</th>
+                <th>Santiment Channel</th>
+                <th>Economic Calendar</th>
+                <th>Enabled Sources</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for guild in guilds %}
+            <tr>
+                <td><strong>{{ guild.guild_id }}</strong></td>
+                <td>
+                    {% if guild.glassnode_channel %}
+                        <code>{{ guild.glassnode_channel }}</code>
+                    {% else %}
+                        <span style="color: #96989D;">Not set</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if guild.santiment_channel %}
+                        <code>{{ guild.santiment_channel }}</code>
+                    {% else %}
+                        <span style="color: #96989D;">Not set</span>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if guild.economic_calendar_channel %}
+                        <code>{{ guild.economic_calendar_channel }}</code>
+                    {% else %}
+                        <span style="color: #96989D;">Not set</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div style="display: flex; gap: 5px; flex-wrap: wrap;">
+                        {% for source in guild.enabled_sources %}
+                            <span class="badge badge-enabled">{{ source }}</span>
+                        {% endfor %}
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

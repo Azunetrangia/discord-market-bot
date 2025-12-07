@@ -25,6 +25,7 @@ class MyBot(commands.Bot):
         """Load all cogs when bot starts"""
         # Load cogs
         await self.load_extension('cogs.news_cog')
+        await self.load_extension('cogs.health_checker')  # RSS Health Monitoring
         
         # Sync commands
         await self.tree.sync()
@@ -68,7 +69,7 @@ class MainView(discord.ui.View):
     
     @discord.ui.button(label="Economic Calendar", style=discord.ButtonStyle.success, emoji="📊", row=0)
     async def economic_button(self, interaction: discord.Interaction, button: discord.ui.Button):
-        """Button để truy cập Economic Calendar"""
+        """Button để truy cập Economic Calendar - Coming Soon"""
         # Kiểm tra quyền admin
         if not interaction.user.guild_permissions.administrator:
             await interaction.response.send_message(
@@ -76,28 +77,16 @@ class MainView(discord.ui.View):
                 ephemeral=True
             )
             return
-            
-        # Import và tạo EconomicMenuView từ news_cog
-        from cogs.news_cog import EconomicMenuView
-        view = EconomicMenuView()
         
+        # Placeholder message - feature coming soon
         embed = discord.Embed(
-            title="📊 Economic Calendar - Lịch Kinh Tế",
-            description="Theo dõi các chỉ số kinh tế quan trọng từ FRED (Federal Reserve)",
-            color=discord.Color.green()
+            title="📊 Economic Calendar",
+            description="🚧 Tính năng Economic Calendar sẽ được cập nhật trong tương lai\n\nChúng tôi đang phát triển phiên bản mới với nhiều cải tiến!",
+            color=discord.Color.gold()
         )
-        embed.add_field(
-            name="📈 Nguồn dữ liệu",
-            value="Federal Reserve Economic Data (FRED)\nDữ liệu chính thống từ Federal Reserve Bank of St. Louis",
-            inline=False
-        )
-        embed.add_field(
-            name="🔔 Chỉ số theo dõi",
-            value="• Federal Funds Rate\n• Unemployment Rate\n• CPI (Consumer Price Index)\n• GDP\n• Non-Farm Payrolls\n• Treasury Spread\n• USD/EUR Rate\n• ... và nhiều hơn nữa",
-            inline=False
-        )
+        embed.set_footer(text="Stay tuned for updates! 🎯")
         
-        await interaction.response.edit_message(embed=embed, view=view)
+        await interaction.response.edit_message(embed=embed, view=None)
 
 # Lệnh /start duy nhất
 @bot.tree.command(name="start", description="Khởi động bot và truy cập quản lý tin tức")
@@ -116,7 +105,7 @@ async def start_command(interaction: discord.Interaction):
     )
     embed.add_field(
         name="📊 Economic Calendar",
-        value="Theo dõi lịch kinh tế và các chỉ số quan trọng\n• Dữ liệu từ Investing.com\n• Real-time updates\n• 7 chỉ số kinh tế quan trọng",
+        value="🚧 Tính năng đang được phát triển - Coming Soon!\n• Sẽ cập nhật trong phiên bản tiếp theo",
         inline=False
     )
     

@@ -15,14 +15,14 @@ Tất cả các thay đổi quan trọng của project sẽ được ghi lại �
 - ✅ Modal forms cho nhập liệu
 
 **📰 Quản lý Tin tức (News Management):**
-- ✅ Tích hợp Messari API
+- ✅ Tích hợp Glassnode Insights (RSS)
 - ✅ Tích hợp Santiment API (GraphQL)
 - ✅ Hỗ trợ nhiều RSS Feeds tùy chỉnh
 - ✅ Background task tự động kiểm tra tin mới (10 phút)
 - ✅ Hệ thống chống trùng lặp tin
 - ✅ Channel selection per source
 - ✅ CRUD operations qua UI:
-  - Cài đặt kênh cho Messari
+  - Cài đặt kênh cho Glassnode (RSS)
   - Cài đặt kênh cho Santiment
   - Thêm RSS Feed (với Modal)
   - Xóa RSS Feed (với Select Menu)
@@ -164,7 +164,7 @@ Không có (phiên bản đầu tiên)
 
 - Developer: [Your Name]
 - Framework: discord.py
-- APIs: Messari, Santiment, CoinGecko
+- APIs: Glassnode (RSS), Santiment, CoinGecko
 
 ---
 

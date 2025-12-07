@@ -440,10 +440,9 @@ Nếu có vấn đề hoặc câu hỏi:
   - Áp dụng cho tất cả Vietnamese RSS feeds
 
 #### 🔄 API Changes
-- ✅ **Messari → Glassnode**: Thay thế Messari API (requires Enterprise plan)
-  - **Old**: Messari Research API (401 Unauthorized)
-  - **New**: Glassnode Insights RSS (free, high-quality on-chain analytics)
-  - Source: https://insights.glassnode.com/feed/
+- ✅ Messari references removed — migrated to Glassnode (RSS)
+  - Note: The repository no longer relies on the Messari paid Research API. Glassnode Insights (RSS) is used for on-chain research feeds where available.
+  - Glassnode RSS: https://insights.glassnode.com/feed/
 
 - ✅ **Santiment GraphQL Fix**: Cập nhật query structure
   - **Old**: `getNews` query (không tồn tại trong schema)

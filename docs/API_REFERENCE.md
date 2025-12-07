@@ -1,40 +1,22 @@
 # 📡 API Reference & Technical Details
 
-## Messari API
+## Glassnode Insights (RSS)
 
-### Endpoint sử dụng:
+Glassnode Insights provides an RSS feed of on-chain articles and analyses. The bot consumes the public RSS feed; no API key is required.
+
+### Feed URL (example):
 ```
-GET https://data.messari.io/api/v1/news
+GET https://insights.glassnode.com/feed/
 ```
 
-### Headers:
+### Notes:
+- Use standard HTTP GET to fetch the RSS feed. The bot uses `feedparser` to parse entries.
+- No custom headers or API key required for RSS endpoints.
+
+### Example parsed entry fields (via feedparser):
 ```python
-{
-    'x-messari-api-key': 'YOUR_API_KEY'
-}
+# entry.id, entry.title, entry.link, entry.summary, entry.published
 ```
-
-### Response Format:
-```json
-{
-  "data": [
-    {
-      "id": "abc123",
-      "title": "Bitcoin Price Analysis",
-      "url": "https://...",
-      "content": "...",
-      "published_at": "2025-01-01T00:00:00Z"
-    }
-  ]
-}
-```
-
-### Rate Limits:
-- Free tier: ~20 requests/minute
-- Pro tier: Varies by plan
-
-### Documentation:
-https://messari.io/api/docs
 
 ---
 
@@ -216,13 +198,13 @@ async def news_checker(self):
     config = self.load_news_config()
     last_posts = self.load_last_posts()
     
-    # 2. Check Messari
-    if config['messari_channel']:
-        news = await self.fetch_messari_news()
-        for article in news:
-            if article['id'] not in last_posts['messari']:
-                # Post to channel
-                # Save ID
+  # 2. Check Glassnode (RSS)
+  if config.get('glassnode_channel'):
+    news = await self.fetch_glassnode_insights()
+    for article in news:
+      if article['id'] not in last_posts.get('glassnode', []):
+        # Post to channel
+        # Save ID
     
     # 3. Check Santiment
     # Similar logic
@@ -340,25 +322,31 @@ async def create_price_chart(self, coin_id, ticker_display, current_price, targe
 #### news_config.json
 ```json
 {
-  "messari_channel": 1234567890,
-  "santiment_channel": 1234567891,
-  "rss_feeds": [
-    {
-      "name": "Tin Vĩ Mô ABC",
-      "url": "https://example.com/rss.xml",
-      "channel_id": 1234567892
+  "guilds": {
+    "123456789012345678": {
+      "glassnode_channel": null,
+      "santiment_channel": null,
+      "5phutcrypto_channel": null,
+      "theblock_channel": null,
+      "economic_calendar_channel": null,
+      "rss_feeds": []
     }
-  ]
+  }
 }
 ```
 
 #### last_post_ids.json
 ```json
 {
-  "messari": ["id1", "id2", "..."],
-  "santiment": ["id1", "id2", "..."],
-  "rss": {
-    "https://example.com/rss.xml": ["id1", "id2", "..."]
+  "guilds": {
+    "123456789012345678": {
+      "glassnode": [],
+      "santiment": [],
+      "5phutcrypto": [],
+      "theblock": [],
+      "economic_events": [],
+      "rss": {}
+    }
   }
 }
 ```
@@ -496,8 +484,8 @@ async with aiohttp.ClientSession() as session:
 ### Memory Management
 ```python
 # Limit stored IDs to 100
-if len(last_posts['messari']) > 100:
-    last_posts['messari'] = last_posts['messari'][-100:]
+if len(last_posts.get('glassnode', [])) > 100:
+  last_posts['glassnode'] = last_posts.get('glassnode', [])[-100:]
 ```
 
 ### Chart Cleanup

@@ -5,8 +5,8 @@ Thư mục này chứa các Discord Bot Cogs (modules) để tổ chức code.
 ## 📁 Files
 
 ### 🗞️ news_cog.py
-**Chức năng:** Quản lý tin tức tự động
-- Tích hợp Messari API
+-**Chức năng:** Quản lý tin tức tự động
+- Tích hợp Glassnode (RSS)
 - Tích hợp Santiment API  
 - Hỗ trợ nhiều RSS Feeds
 - Background task kiểm tra tin mới (10 phút)

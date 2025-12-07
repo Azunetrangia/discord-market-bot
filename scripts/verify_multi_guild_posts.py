@@ -34,9 +34,10 @@ async def on_ready():
         print(f"\n📌 GUILD: {guild.name} (ID: {guild_id})")
         print("-" * 60)
         
-        # Kiểm tra các channel chính
+        # Kiểm tra các channel chính (Glassnode migrated from legacy 'messari')
+        glass_ch = guild_config.get('glassnode_channel') or guild_config.get('messari_channel')
         channels_to_check = {
-            "Messari": guild_config.get('messari_channel'),
+            "Glassnode": glass_ch,
             "Santiment": guild_config.get('santiment_channel'),
             "5phutcrypto": guild_config.get('5phutcrypto_channel'),
             "Economic Calendar": guild_config.get('economic_calendar_channel')

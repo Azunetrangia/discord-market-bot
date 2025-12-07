@@ -46,7 +46,7 @@
 - [x] Lệnh /start duy nhất
 - [x] Button [Quản lý Tin tức]
 - [x] Select Menu với 5 options
-- [x] Messari API integration
+- [x] Glassnode RSS integration
 - [x] Santiment API integration (GraphQL)
 - [x] RSS Feeds support
 - [x] ChannelSelect cho mỗi nguồn
@@ -170,7 +170,7 @@
 - [x] Main buttons work
 - [x] News menu displays
 - [x] Alerts menu displays
-- [x] Can add Messari channel
+- [x] Can add Glassnode channel
 - [x] Can add Santiment channel
 - [x] Can add RSS feed
 - [x] Can remove RSS feed
@@ -205,10 +205,10 @@
 - [x] pycoingecko >= 3.1.0
 
 ### External APIs (100%)
-- [x] Messari API documented
-- [x] Santiment API documented
-- [x] CoinGecko API documented
-- [x] RSS parsing documented
+-- [x] Glassnode (RSS) documented
+-- [x] Santiment API documented
+-- [x] CoinGecko API documented
+-- [x] RSS parsing documented
 
 ---
 
@@ -249,8 +249,8 @@
 - [x] interaction.response.edit_message ✅
 - [x] interaction.response.send_modal ✅
 
-### Yêu cầu Tin tức (100%)
-- [x] Messari API ✅
+- ### Yêu cầu Tin tức (100%)
+- [x] Glassnode (RSS) ✅
 - [x] Santiment API ✅
 - [x] RSS Feeds ✅
 - [x] Select Menu với các options ✅

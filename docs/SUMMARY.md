@@ -9,7 +9,7 @@ Bot Discord đa chức năng giúp người dùng:
 
 ### ⚡ Điểm Nổi bật
 ✅ **1 lệnh duy nhất**: `/start` - Tất cả chức năng qua UI tương tác  
-✅ **Multi-source news**: Messari, Santiment, RSS  
+✅ **Multi-source news**: Glassnode (RSS), Santiment, RSS
 ✅ **Smart alerts**: CoinGecko + Auto charts  
 ✅ **Modern UI**: Buttons, Selects, Modals  
 ✅ **Background tasks**: Auto-check 10min (news) / 60s (price)  
@@ -74,7 +74,7 @@ Bot Discord đa chức năng giúp người dùng:
 | **Language** | Python | 3.8+ |
 | **Framework** | discord.py | 2.3.2+ |
 | **Async** | asyncio + aiohttp | 3.9.0+ |
-| **APIs** | Messari, Santiment, CoinGecko | - |
+| **APIs** | Glassnode (RSS), Santiment, CoinGecko | - |
 | **RSS** | feedparser | 6.0.10+ |
 | **Charts** | matplotlib | 3.8.0+ |
 | **Config** | python-dotenv | 1.0.0+ |
@@ -84,8 +84,8 @@ Bot Discord đa chức năng giúp người dùng:
 
 ## 📊 Features Implemented
 
-### ✅ News Management (100%)
-- [x] Messari API integration
+-### ✅ News Management (100%)
+- [x] Glassnode RSS integration
 - [x] Santiment API integration (GraphQL)
 - [x] Multiple RSS Feeds support
 - [x] Background auto-posting (10 min)
@@ -164,17 +164,16 @@ Bot Discord đa chức năng giúp người dùng:
 
 | API | Endpoint | Usage |
 |-----|----------|-------|
-| **Messari** | `/api/v1/news` | Fetch crypto news |
+| **Glassnode (RSS)** | `https://insights.glassnode.com/feed/` | Crypto market & on-chain insights |
 | **Santiment** | GraphQL `/graphql` | On-chain analytics |
 | **CoinGecko** | `/simple/price` | Current prices |
 | **CoinGecko** | `/market_chart` | Historical data (7d) |
 | **RSS** | Various | Custom feeds |
 
 **Rate Limits (with API Keys):**
-- Messari: 20 req/min
-- Santiment: 300 queries/month
-- CoinGecko: 500 req/min
-- RSS: No limit
+-- Santiment: 300 queries/month
+-- CoinGecko: 500 req/min
+-- RSS (Glassnode insights): No limit
 
 ---
 

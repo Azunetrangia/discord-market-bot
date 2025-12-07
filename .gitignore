@@ -42,7 +42,32 @@ data/chart_*.png
 
 # Logs
 *.log
+logs/
+*.log.*
 
 # OS
 .DS_Store
 Thumbs.db
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+data/news_bot.db
+
+# Process files
+*.pid
+bot.pid
+dashboard.pid
+
+# Ngrok
+ngrok.log
+
+# Data backups
+data/backups/
+
+# Data files (keep structure, not content)
+data/alerts.json
+data/last_post_ids.json
+data/news_config.json
+data/news_config.json.backup

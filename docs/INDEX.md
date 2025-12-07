@@ -161,7 +161,7 @@ discord-bot/
 ```
 /start
   ├─ [Quản lý Tin tức] (Admin only)
-  │   ├─ Cài đặt kênh Messari
+   │   ├─ Cài đặt kênh Glassnode
   │   ├─ Cài đặt kênh Santiment
   │   ├─ Thêm RSS Feed
   │   ├─ Xóa RSS Feed
@@ -184,9 +184,9 @@ Scripts:  start.sh, start.bat
 
 ### APIs
 ```
-Messari:    data.messari.io/api/v1/news
-Santiment:  api.santiment.net/graphql
-CoinGecko:  api.coingecko.com/api/v3/*
+Glassnode (RSS):    https://insights.glassnode.com/feed/
+Santiment:          api.santiment.net/graphql
+CoinGecko:          api.coingecko.com/api/v3/*
 ```
 
 ---
@@ -216,7 +216,7 @@ CoinGecko:  api.coingecko.com/api/v3/*
 - Permission errors → TROUBLESHOOTING.md § Permission Errors
 
 **APIs:**
-- Messari → API_REFERENCE.md § Messari API
+- Glassnode → API_REFERENCE.md § Glassnode (RSS)
 - Santiment → API_REFERENCE.md § Santiment API
 - CoinGecko → API_REFERENCE.md § CoinGecko API
 - RSS → API_REFERENCE.md § RSS Feeds

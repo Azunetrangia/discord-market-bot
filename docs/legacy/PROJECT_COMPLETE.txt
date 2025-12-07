@@ -27,7 +27,7 @@
 ═══════════════════════════════════════════════════════════════
 
 ✅ TÍNH NĂNG 1: QUẢN LÝ TIN TỨC
-   ├─ Messari API Integration
+   ├─ Glassnode (RSS) Integration
    ├─ Santiment API Integration (GraphQL)
    ├─ Multiple RSS Feeds Support
    ├─ Background Auto-posting (10 min)
@@ -87,7 +87,7 @@ Total: 11 Documentation Files, ~5,000+ lines
 Language:     Python 3.8+
 Framework:    discord.py 2.3.2+
 Async:        asyncio + aiohttp
-APIs:         Messari, Santiment, CoinGecko
+APIs:         Glassnode (RSS), Santiment, CoinGecko
 RSS:          feedparser
 Charts:       matplotlib
 Config:       python-dotenv
@@ -126,7 +126,7 @@ Yêu cầu Gốc:
 ✅ ChannelSelect cho channel selection
 
 Tin tức:
-✅ Messari API
+✅ Glassnode (RSS)
 ✅ Santiment API (GraphQL)
 ✅ Multiple RSS Feeds
 ✅ Background tasks (10 min)
@@ -348,8 +348,8 @@ Built with:
 - feedparser by Kurt McKee
 - pycoingecko by man-c
 
-APIs:
-- Messari for crypto news
+- APIs:
+- Glassnode (RSS) for crypto news
 - Santiment for on-chain data
 - CoinGecko for price data
 

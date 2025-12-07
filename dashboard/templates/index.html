@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="stats-grid">
+    <div class="stat-card">
+        <h3>Active Guilds</h3>
+        <div class="value" id="guilds">{{ guilds }}</div>
+        <div class="label">Discord Servers</div>
+    </div>
+    
+    <div class="stat-card">
+        <h3>RSS Feeds</h3>
+        <div class="value" id="feeds">{{ feeds }}</div>
+        <div class="label">Active Sources</div>
+    </div>
+    
+    <div class="stat-card">
+        <h3>Articles Posted</h3>
+        <div class="value" id="articles">{{ articles }}</div>
+        <div class="label">Total Tracked</div>
+    </div>
+    
+    <div class="stat-card">
+        <h3>Cache Hit Rate</h3>
+        <div class="value" id="cache_hit_rate" style="color: #FEE75C;">{{ cache_hit_rate }}%</div>
+        <div class="label">{{ cache_entries }} cached entries</div>
+    </div>
+</div>
+
+<div class="content-section">
+    <h2>📊 Articles by Source</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Source</th>
+                <th>Articles Posted</th>
+                <th>Percentage</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for source, count in articles_by_source.items() %}
+            <tr>
+                <td><strong>{{ source }}</strong></td>
+                <td>{{ count }}</td>
+                <td>
+                    <div style="display: flex; align-items: center;">
+                        <div style="width: 200px; height: 20px; background: #36393F; border-radius: 10px; overflow: hidden;">
+                            <div style="width: {{ (count / articles * 100)|round }}%; height: 100%; background: linear-gradient(90deg, #5865F2, #57F287);"></div>
+                        </div>
+                        <span style="margin-left: 10px;">{{ (count / articles * 100)|round(1) }}%</span>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="content-section">
+    <h2>💾 System Information</h2>
+    <table>
+        <tr>
+            <td><strong>Database Size</strong></td>
+            <td>{{ db_size_mb }} MB</td>
+        </tr>
+        <tr>
+            <td><strong>Last Updated</strong></td>
+            <td id="last_update">Just now</td>
+        </tr>
+        <tr>
+            <td><strong>Status</strong></td>
+            <td>
+                <span class="status-indicator status-online"></span>
+                <strong style="color: #57F287;">ONLINE</strong>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<script>
+    // Update timestamp
+    setInterval(function() {
+        const now = new Date();
+        document.getElementById('last_update').textContent = now.toLocaleTimeString('vi-VN');
+    }, 1000);
+</script>
+{% endblock %}

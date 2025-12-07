@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="stats-grid">
+    <div class="stat-card">
+        <h3>Cache Hits</h3>
+        <div class="value" style="color: #57F287;">{{ cache_stats.session_hits }}</div>
+        <div class="label">This Session</div>
+    </div>
+    
+    <div class="stat-card">
+        <h3>Cache Misses</h3>
+        <div class="value" style="color: #ED4245;">{{ cache_stats.session_misses }}</div>
+        <div class="label">This Session</div>
+    </div>
+    
+    <div class="stat-card">
+        <h3>Total Entries</h3>
+        <div class="value" style="color: #5865F2;">{{ cache_stats.total_entries }}</div>
+        <div class="label">Cached Translations</div>
+    </div>
+    
+    <div class="stat-card">
+        <h3>Total Uses</h3>
+        <div class="value" style="color: #FEE75C;">{{ cache_stats.total_uses }}</div>
+        <div class="label">Cache Requests</div>
+    </div>
+</div>
+
+<div class="content-section">
+    <h2>💾 Most Used Translations</h2>
+    <p>Top 20 cached translations by usage count</p>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Hash</th>
+                <th>Translation Preview</th>
+                <th>Uses</th>
+                <th>Created At</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in cached_items %}
+            <tr>
+                <td><code>{{ item.text_hash[:12] }}...</code></td>
+                <td>{{ item.preview }}{% if item.preview|length >= 100 %}...{% endif %}</td>
+                <td><strong>{{ item.use_count }}</strong></td>
+                <td>{{ item.created_at }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

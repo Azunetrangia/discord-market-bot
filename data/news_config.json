@@ -1,10 +1,9 @@
 {
   "guilds": {
     "1394159510725070961": {
-      "messari_channel": 1435655446328250380,
+      "glassnode_channel": 1435655446328250380,
       "santiment_channel": 1435655670820241491,
       "5phutcrypto_channel": 1435660260370288812,
-      "economic_calendar_channel": 1435655719209664632,
       "rss_feeds": [
         {
           "name": "Thời sự - VnExpress RSS",
@@ -43,6 +42,44 @@
         }
       ],
       "theblock_channel": 1435826848083869789
+    },
+    "829743245838909461": {
+      "glassnode_channel": null,
+      "santiment_channel": null,
+      "5phutcrypto_channel": null,
+      "theblock_channel": null,
+      "rss_feeds": [
+        {
+          "name": "Thời sự - VnExpress RSS",
+          "url": "https://vnexpress.net/rss/thoi-su.rss",
+          "channel_id": 1261675273171112056
+        },
+        {
+          "name": "BBC News",
+          "url": "https://feeds.bbci.co.uk/news/rss.xml",
+          "channel_id": 1261675273171112056
+        },
+        {
+          "name": "Cointelegraph.com News",
+          "url": "https://cointelegraph.com/rss",
+          "channel_id": 1261675273171112056
+        },
+        {
+          "name": "Cointelegraph - Blockchain",
+          "url": "https://cointelegraph.com/rss/tag/blockchain",
+          "channel_id": 1261675273171112056
+        },
+        {
+          "name": "Cointelegraph - Market Analysis",
+          "url": "https://cointelegraph.com/rss/category/market-analysis",
+          "channel_id": 1261675273171112056
+        },
+        {
+          "name": "Decrypt",
+          "url": "https://decrypt.co/feed",
+          "channel_id": 1261675273171112056
+        }
+      ]
     }
   }
 }

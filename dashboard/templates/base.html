@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discord Bot Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 Discord News Bot Dashboard</h1>
+            <p>Real-time monitoring and management</p>
+            <nav>
+                <a href="{{ url_for('index') }}">📊 Dashboard</a>
+                <a href="{{ url_for('guilds') }}">🏰 Guilds</a>
+                <a href="{{ url_for('feeds') }}">📡 RSS Feeds</a>
+                <a href="{{ url_for('articles') }}">📰 Articles</a>
+                <a href="{{ url_for('cache_view') }}">💾 Cache</a>
+            </nav>
+        </header>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        {% block content %}{% endblock %}
+    </div>
+
+    <script>
+        // Auto-refresh stats every 30 seconds
+        setInterval(function() {
+            fetch('/api/stats')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Stats updated:', data);
+                    // Update specific elements if they exist
+                    const elements = {
+                        'guilds': data.guilds,
+                        'feeds': data.feeds,
+                        'articles': data.articles,
+                        'cache_hit_rate': data.cache_hit_rate + '%'
+                    };
+                    
+                    for (let [id, value] of Object.entries(elements)) {
+                        const elem = document.getElementById(id);
+                        if (elem) elem.textContent = value;
+                    }
+                });
+        }, 30000);
+    </script>
+</body>
+</html>

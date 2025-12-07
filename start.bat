@@ -27,11 +27,11 @@ if not exist data (
 
 REM Kiểm tra các file JSON
 if not exist data\news_config.json (
-    echo {"messari_channel": null, "santiment_channel": null, "rss_feeds": []} > data\news_config.json
+    echo {"glassnode_channel": null, "santiment_channel": null, "rss_feeds": []} > data\news_config.json
 )
 
 if not exist data\last_post_ids.json (
-    echo {"messari": [], "santiment": [], "rss": {}} > data\last_post_ids.json
+    echo {"glassnode": [], "santiment": [], "rss": {}} > data\last_post_ids.json
 )
 
 if not exist data\alerts.json (

@@ -14,7 +14,7 @@ Thư mục này chứa các file JSON để lưu trữ dữ liệu của bot.
 **Structure:**
 ```json
 {
-  "messari_channel": 1234567890,
+  "glassnode_channel": 1234567890,
   "santiment_channel": 1234567891,
   "rss_feeds": [
     {
@@ -27,7 +27,7 @@ Thư mục này chứa các file JSON để lưu trữ dữ liệu của bot.
 ```
 
 **Fields:**
-- `messari_channel`: ID kênh cho tin Messari (null nếu chưa cài)
+  "glassnode_channel": 1234567890,
 - `santiment_channel`: ID kênh cho tin Santiment (null nếu chưa cài)
 - `rss_feeds`: Array các RSS feed đã thêm
   - `name`: Tên hiển thị
@@ -39,30 +39,63 @@ Thư mục này chứa các file JSON để lưu trữ dữ liệu của bot.
 ### 🔖 last_post_ids.json
 **Mục đích:** Tracking các bài viết đã đăng (chống trùng lặp)
 
-**Structure:**
+# 💾 Data Directory
+
+This folder contains JSON files the bot uses for persisting configuration and
+state. Files are created automatically on first run if they don't exist.
+
+Files
+-----
+
+### `news_config.json`
+Purpose: per-guild configuration for news sources and their target channels.
+
+Example structure:
+
 ```json
 {
-  "messari": ["id1", "id2", "id3"],
-  "santiment": ["id1", "id2"],
-  "rss": {
-    "https://example.com/rss.xml": ["id1", "id2"]
+  "guilds": {
+    "123456789012345678": {
+      "glassnode_channel": null,
+      "santiment_channel": null,
+      "5phutcrypto_channel": null,
+      "theblock_channel": null,
+      "economic_calendar_channel": null,
+      "rss_feeds": []
+    }
   }
 }
 ```
 
-**Fields:**
-- `messari`: Array chứa IDs của tin Messari đã đăng
-- `santiment`: Array chứa IDs của tin Santiment đã đăng
-- `rss`: Object với keys = RSS URLs, values = arrays IDs
+### `last_post_ids.json`
+Purpose: track posted IDs to prevent duplicates (per guild).
 
-**Limit:** Mỗi array giữ tối đa 100 IDs để tránh file quá lớn.
+Example structure:
 
----
+```json
+{
+  "guilds": {
+    "123456789012345678": {
+      "glassnode": [],
+      "santiment": [],
+      "5phutcrypto": [],
+      "theblock": [],
+      "economic_events": [],
+      "rss": {}
+    }
+  }
+}
+```
 
-### 🔔 alerts.json
-**Mục đích:** Lưu các cảnh báo giá đang hoạt động
+Notes:
+- The code limits stored IDs per source (typically to the latest 100) to keep the
+  file small.
 
-**Structure:**
+### `alerts.json`
+Purpose: active price alerts created by users.
+
+Example:
+
 ```json
 [
   {
@@ -76,190 +109,50 @@ Thư mục này chứa các file JSON để lưu trữ dữ liệu của bot.
 ]
 ```
 
-**Fields:**
-- `user_id`: Discord user ID (người đặt alert)
-- `ticker`: CoinGecko coin ID (ví dụ: "bitcoin")
-- `ticker_display`: Ticker hiển thị (ví dụ: "BTC")
-- `target_price`: Giá mục tiêu (USD)
-- `channel_id`: ID kênh nhận thông báo
-- `created_at`: Thời gian tạo (ISO format)
+Maintenance & tips
+------------------
 
----
+- To reset last-post tracking (will allow old posts to be re-posted):
 
-### 📊 chart_*.png (Temporary)
-**Mục đích:** Các biểu đồ giá được tạo tự động
-
-**Format:** `chart_{coin_id}.png`
-
-**Lifecycle:**
-1. Tạo khi alert trigger
-2. Gửi vào Discord
-3. Tự động xóa sau khi gửi
-
-**Size:** ~100-200 KB mỗi chart
-
----
-
-## 🔄 Data Flow
-
-### News Flow:
-```
-Bot Start
-    ↓
-Load news_config.json
-    ↓
-Load last_post_ids.json
-    ↓
-Every 10 minutes:
-    Fetch new articles
-    Check against last_post_ids
-    Post new ones
-    Update last_post_ids
-    Save to disk
-```
-
-### Alerts Flow:
-```
-Bot Start
-    ↓
-Load alerts.json
-    ↓
-Every 60 seconds:
-    Fetch prices for all tickers
-    Check against target prices
-    If triggered:
-        Generate chart
-        Send notification
-        Remove from alerts
-        Save alerts.json
-```
-
----
-
-## 🔒 File Permissions
-
-**Recommended permissions (Linux/Mac):**
 ```bash
-chmod 600 *.json  # Read/write for owner only
+echo '{"guilds": {}}' > data/last_post_ids.json
 ```
 
-**Windows:** No special action needed
+- To clear all alerts:
 
----
-
-## 💾 Backup Strategy
-
-**Recommended:**
 ```bash
-# Daily backup
+echo '[]' > data/alerts.json
+```
+
+- Backup examples:
+
+```bash
 cp data/*.json backups/$(date +%Y%m%d)/
-
-# Keep 7 days of backups
 find backups/ -mtime +7 -delete
 ```
 
-**What to backup:**
-- ✅ news_config.json (cấu hình quan trọng)
-- ✅ alerts.json (cảnh báo đang hoạt động)
-- ⚠️ last_post_ids.json (có thể tái tạo, nhưng nên backup)
-- ❌ chart_*.png (tạm thời, không cần backup)
+Troubleshooting
+---------------
 
----
+If files are missing, create them with safe defaults:
 
-## 🛠️ Maintenance
-
-### Clean up old data:
 ```bash
-# Reset last post IDs (sẽ có thể post lại tin cũ)
-echo '{"messari": [], "santiment": [], "rss": {}}' > data/last_post_ids.json
-
-# Clear all alerts
-echo '[]' > data/alerts.json
-
-# Delete old charts
-rm data/chart_*.png
-```
-
-### Check file sizes:
-```bash
-ls -lh data/
-```
-
-### Validate JSON:
-```bash
-# Using jq
-jq . data/news_config.json
-jq . data/last_post_ids.json
-jq . data/alerts.json
-```
-
----
-
-## 🐛 Troubleshooting
-
-### File không tồn tại
-```bash
-# Tạo thủ công
 mkdir -p data
-echo '{"messari_channel": null, "santiment_channel": null, "rss_feeds": []}' > data/news_config.json
-echo '{"messari": [], "santiment": [], "rss": {}}' > data/last_post_ids.json
+echo '{"guilds": {}}' > data/news_config.json
+echo '{"guilds": {}}' > data/last_post_ids.json
 echo '[]' > data/alerts.json
 ```
 
-### File bị corrupt
-```bash
-# Kiểm tra với jq
-jq . data/alerts.json
+Validate JSON with `jq` if you run into parsing errors.
 
-# Nếu lỗi, backup và reset
-cp data/alerts.json data/alerts.json.corrupt
-echo '[]' > data/alerts.json
-```
+Security
+--------
 
-### File quá lớn
-```bash
-# Kiểm tra size
-du -h data/*.json
+- Do not commit secrets to the repo. Keep `.env` out of version control.
+- Consider periodic backups of `data/`.
 
-# Nếu last_post_ids.json > 1MB
-# Code đã tự động giới hạn 100 IDs
-# Nhưng có thể reset thủ công nếu cần
-```
+Learn more
+----------
 
----
-
-## 📊 Statistics
-
-**Expected sizes:**
-- news_config.json: ~500 bytes - 5 KB
-- last_post_ids.json: ~1-10 KB
-- alerts.json: ~100 bytes per alert
-- chart_*.png: ~100-200 KB (temporary)
-
-**Growth rate:**
-- news_config.json: Slow (chỉ khi thêm RSS)
-- last_post_ids.json: Stable (limited to 100 IDs)
-- alerts.json: Linear (depends on users)
-
----
-
-## 🔐 Security
-
-**Important:**
-- ❌ Không commit folder `data/` vào Git
-- ✅ File `.gitignore` đã exclude `data/*.png`
-- ✅ JSON files chỉ chứa IDs, không có secrets
-- ✅ User IDs là public info trên Discord
-
-**File permissions:**
-- Owner: read + write
-- Group: none
-- Others: none
-
----
-
-## 📚 Learn More
-
-- JSON Format: https://www.json.org/
-- Data persistence: https://realpython.com/python-json/
-- File I/O: https://docs.python.org/3/tutorial/inputoutput.html
+- JSON: https://www.json.org/
+- Python JSON: https://docs.python.org/3/library/json.html

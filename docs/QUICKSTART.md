@@ -17,7 +17,7 @@ cp .env.example .env
 
 ```env
 DISCORD_TOKEN=your_discord_bot_token_here
-MESSARI_API_KEY=your_messari_api_key_here
+# Glassnode Insights: no API key required, uses RSS at https://insights.glassnode.com/feed/
 SANTIMENT_API_KEY=your_santiment_api_key_here
 COINGECKO_API_KEY=your_coingecko_api_key_here
 ```
@@ -31,7 +31,7 @@ COINGECKO_API_KEY=your_coingecko_api_key_here
 6. Copy URL và mở để thêm bot vào server
 
 ### Lấy API Keys:
-- **Messari**: https://messari.io/api
+- **Glassnode (RSS)**: https://insights.glassnode.com/feed/  (no API key required)
 - **Santiment**: https://santiment.net/products-and-plans/sanapi
 - **CoinGecko**: https://www.coingecko.com/en/api/pricing
 

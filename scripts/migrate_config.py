@@ -24,16 +24,17 @@ channel_to_guild = {
 # Tạo config cho từng guild
 for guild_key in set(channel_to_guild.values()):
     guilds[guild_key] = {
-        "messari_channel": None,
+        "glassnode_channel": None,
         "santiment_channel": None,
         "rss_feeds": []
     }
 
-# Phân chia messari_channel
-if old_config.get('messari_channel'):
-    guild_key = channel_to_guild.get(old_config['messari_channel'])
+# Phân chia glassnode_channel (legacy: messari_channel)
+if old_config.get('glassnode_channel') or old_config.get('messari_channel'):
+    ch = old_config.get('glassnode_channel') or old_config.get('messari_channel')
+    guild_key = channel_to_guild.get(ch)
     if guild_key:
-        guilds[guild_key]['messari_channel'] = old_config['messari_channel']
+        guilds[guild_key]['glassnode_channel'] = ch
 
 # Phân chia santiment_channel
 if old_config.get('santiment_channel'):
@@ -60,6 +61,6 @@ print("✅ Đã migrate config!")
 print(f"📊 Tìm thấy {len(guilds)} guild(s):")
 for guild_key, config in guilds.items():
     print(f"\n{guild_key}:")
-    print(f"  - Messari: {config['messari_channel']}")
+    print(f"  - Glassnode: {config.get('glassnode_channel')}")
     print(f"  - Santiment: {config['santiment_channel']}")
     print(f"  - RSS Feeds: {len(config['rss_feeds'])}")

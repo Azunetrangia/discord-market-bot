@@ -1,7 +1,7 @@
 # 🤖 Discord News Bot
 
 Bot Discord chuyên nghiệp tổng hợp tin tức kinh tế & crypto tự động với timezone UTC+7:
-- 📰 **Tin tức Đa nguồn**: Messari, Santiment, 5phutcrypto, RSS Feeds
+- 📰 **Tin tức Đa nguồn**: Glassnode (RSS), Santiment, 5phutcrypto, RSS Feeds
 - 📅 **Economic Calendar**: Lịch kinh tế từ Investing.com (UTC+7)
 - 🌐 **Dịch tự động**: Tự động dịch tin nước ngoài sang tiếng Việt
 - 🎨 **Multi-guild Support**: Hỗ trợ nhiều Discord servers cùng lúc
@@ -9,8 +9,8 @@ Bot Discord chuyên nghiệp tổng hợp tin tức kinh tế & crypto tự đ�
 
 ## ✨ Tính năng nổi bật
 
-### 📰 Quản lý Tin tức
-- Tích hợp Messari API cho tin tức crypto market
+-### 📰 Quản lý Tin tức
+- Tích hợp Glassnode Insights (RSS) cho tin tức & phân tích on-chain
 - Tích hợp Santiment API cho phân tích on-chain
 - Hỗ trợ thêm nhiều RSS Feeds tùy chỉnh (VNExpress, BBC, CNN, Reuters...)
 - **Tự động dịch sang tiếng Việt** cho tin nước ngoài
@@ -48,9 +48,6 @@ Chỉnh sửa file `.env` với các thông tin của bạn:
 ```env
 # Discord Bot Token (từ Discord Developer Portal)
 DISCORD_TOKEN=your_discord_bot_token_here
-
-# Messari API Key (https://messari.io/api)
-MESSARI_API_KEY=your_messari_api_key_here
 
 # Santiment API Key (https://santiment.net/products-and-plans/sanapi)
 SANTIMENT_API_KEY=your_santiment_api_key_here
@@ -94,8 +91,8 @@ Tất cả chức năng được truy cập qua giao diện tương tác (Button
 2. Nhấn button **[Quản lý Tin tức]**
 3. Chọn một trong các tùy chọn:
 
-#### Cài đặt kênh tin Messari
-- Chọn kênh Discord để nhận tin từ Messari API
+#### Cài đặt kênh tin Glassnode (RSS)
+- Chọn kênh Discord để nhận tin từ Glassnode Insights (RSS)
 - Tin tức sẽ tự động đăng mỗi 10 phút
 
 #### Cài đặt kênh tin Santiment
@@ -190,8 +187,8 @@ discord-bot/
 
 Bot chạy 2 background tasks tự động:
 
-### 📰 News Checker (Mỗi 10 phút)
-- Kiểm tra Messari API
+-### 📰 News Checker (Mỗi 10 phút)
+- Kiểm tra Glassnode RSS
 - Kiểm tra Santiment API
 - Kiểm tra tất cả RSS Feeds
 - So sánh với last_post_ids để chống trùng

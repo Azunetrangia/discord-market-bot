@@ -30,9 +30,9 @@ async def check_channels():
             
             print(f"✅ Guild: {guild.name}")
             
-            # Check các channel
+            # Check các channel (prefer 'glassnode_channel' but accept legacy 'messari_channel')
             channels_to_check = {
-                'messari_channel': guild_config.get('messari_channel'),
+                'glassnode_channel': guild_config.get('glassnode_channel') or guild_config.get('messari_channel'),
                 'santiment_channel': guild_config.get('santiment_channel'),
                 '5phutcrypto_channel': guild_config.get('5phutcrypto_channel'),
                 'economic_calendar_channel': guild_config.get('economic_calendar_channel')

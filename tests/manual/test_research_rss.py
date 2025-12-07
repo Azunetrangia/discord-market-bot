@@ -46,8 +46,7 @@ async def main():
     
     # Danh sách RSS feeds về crypto research/analysis
     feeds = [
-        # Messari Research (nếu có RSS)
-        ("Messari Research", "https://messari.io/rss"),
+        # (Legacy Messari removed) Glassnode is recommended below
         
         # CoinDesk Research
         ("CoinDesk Research", "https://www.coindesk.com/arc/outboundfeeds/rss/category/research/"),
@@ -109,7 +108,7 @@ async def main():
     print("=" * 70)
     
     if working:
-        print("\n🎯 RECOMMENDED REPLACEMENTS FOR MESSARI:")
+        print("\n🎯 RECOMMENDED WORKING FEEDS:")
         for name in working[:5]:
             print(f"   • {name}")
 

@@ -42,7 +42,7 @@ nano .env  # hoặc notepad .env trên Windows
 **Nội dung .env phải có:**
 ```env
 DISCORD_TOKEN=your_actual_token_here
-MESSARI_API_KEY=your_key
+# Glassnode Insights: no API key required (RSS)
 SANTIMENT_API_KEY=your_key
 COINGECKO_API_KEY=your_key
 ```
@@ -149,10 +149,10 @@ pip install --upgrade pycoingecko
 
 **Giải pháp:**
 
-**Messari:**
+**Glassnode (RSS):**
 ```bash
-# Test API key
-curl -H "x-messari-api-key: YOUR_KEY" https://data.messari.io/api/v1/news
+# Test RSS accessibility
+curl -I https://insights.glassnode.com/feed/
 ```
 
 **Santiment:**
@@ -174,7 +174,7 @@ curl -H "x_cg_demo_api_key: YOUR_KEY" "https://api.coingecko.com/api/v3/simple/p
 
 ## 📰 Lỗi Tin tức (News Errors)
 
-### ❌ Không nhận được tin từ Messari/Santiment
+### ❌ Không nhận được tin từ Glassnode/Santiment
 
 **Kiểm tra:**
 1. API key có đúng không?
@@ -242,7 +242,7 @@ Bitcoin Magazine: https://bitcoinmagazine.com/.rss/full/
 rm data/last_post_ids.json
 
 # Tạo lại
-echo '{"messari": [], "santiment": [], "rss": {}}' > data/last_post_ids.json
+echo '{"glassnode": [], "santiment": [], "rss": {}}' > data/last_post_ids.json
 
 # Restart bot
 ```
@@ -433,8 +433,8 @@ echo '[]' > data/alerts.json
 mkdir data
 
 # Tạo các file cần thiết
-echo '{"messari_channel": null, "santiment_channel": null, "rss_feeds": []}' > data/news_config.json
-echo '{"messari": [], "santiment": [], "rss": {}}' > data/last_post_ids.json
+echo '{"glassnode_channel": null, "santiment_channel": null, "rss_feeds": []}' > data/news_config.json
+echo '{"glassnode": [], "santiment": [], "rss": {}}' > data/last_post_ids.json
 echo '[]' > data/alerts.json
 ```
 
@@ -456,7 +456,7 @@ echo '[]' > data/alerts.json
 2. **Kiểm tra API status:**
    - Discord: https://discordstatus.com/
    - CoinGecko: https://status.coingecko.com/
-   - Messari: Check their Twitter
+   - Glassnode: https://insights.glassnode.com/ (RSS)
    - Santiment: Check their Status page
 
 3. **Thêm timeout & retry:**
@@ -603,15 +603,14 @@ from pycoingecko import CoinGeckoAPI
 cg = CoinGeckoAPI(api_key='YOUR_KEY')
 print(cg.get_price(ids='bitcoin', vs_currencies='usd'))
 
-# Test Messari
+# Test Glassnode RSS
 import aiohttp
 import asyncio
 
 async def test():
     async with aiohttp.ClientSession() as session:
-        headers = {'x-messari-api-key': 'YOUR_KEY'}
-        async with session.get('https://data.messari.io/api/v1/news', headers=headers) as r:
-            print(await r.json())
+      async with session.get('https://insights.glassnode.com/feed/') as r:
+         print(await r.text())
 
 asyncio.run(test())
 

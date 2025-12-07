@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-section">
+    <h2>📰 Recent Articles</h2>
+    <p>Total: {{ total }} articles | Page {{ page }} of {{ total_pages }}</p>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Source</th>
+                <th>Article Hash</th>
+                <th>Posted At</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for article in articles %}
+            <tr>
+                <td><strong>{{ article.source }}</strong></td>
+                <td><code>{{ article.article_hash[:16] }}...</code></td>
+                <td>{{ article.posted_at }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <div class="pagination">
+        {% if page > 1 %}
+            <a href="{{ url_for('articles', page=page-1) }}">← Previous</a>
+        {% endif %}
+        
+        {% for p in range(1, total_pages + 1) %}
+            {% if p == page %}
+                <a href="#" class="active">{{ p }}</a>
+            {% elif p == 1 or p == total_pages or (p >= page - 2 and p <= page + 2) %}
+                <a href="{{ url_for('articles', page=p) }}">{{ p }}</a>
+            {% elif p == page - 3 or p == page + 3 %}
+                <span>...</span>
+            {% endif %}
+        {% endfor %}
+        
+        {% if page < total_pages %}
+            <a href="{{ url_for('articles', page=page+1) }}">Next →</a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

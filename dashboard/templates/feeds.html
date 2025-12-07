@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="content-section">
+    <h2>📡 RSS Feeds Management</h2>
+    
+    <div style="margin-bottom: 30px;">
+        <h3>➕ Add New RSS Feed</h3>
+        <form method="POST" action="{{ url_for('add_feed') }}" style="max-width: 600px;">
+            <div class="form-group">
+                <label>Guild ID</label>
+                <input type="number" name="guild_id" placeholder="Enter Guild ID" required>
+            </div>
+            
+            <div class="form-group">
+                <label>RSS Feed URL</label>
+                <input type="url" name="url" placeholder="https://example.com/feed.xml" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Source Name</label>
+                <input type="text" name="source_name" placeholder="e.g., VNExpress, BBC News" required>
+            </div>
+            
+            <button type="submit" class="btn btn-success">Add Feed</button>
+        </form>
+    </div>
+
+    <h3>📋 Current RSS Feeds ({{ feeds|length }} total)</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Guild ID</th>
+                <th>Source Name</th>
+                <th>URL</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for feed in feeds %}
+            <tr>
+                <td>{{ feed.feed_id }}</td>
+                <td>{{ feed.guild_id }}</td>
+                <td><strong>{{ feed.source_name }}</strong></td>
+                <td><code style="font-size: 0.8rem;">{{ feed.url[:50] }}...</code></td>
+                <td>
+                    {% if feed.enabled %}
+                        <span class="badge badge-enabled">✓ ENABLED</span>
+                    {% else %}
+                        <span class="badge badge-disabled">✗ DISABLED</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <form method="POST" action="{{ url_for('toggle_feed', feed_id=feed.feed_id) }}" style="display: inline;">
+                        <button type="submit" class="btn btn-warning">
+                            {% if feed.enabled %}Disable{% else %}Enable{% endif %}
+                        </button>
+                    </form>
+                    
+                    <form method="POST" action="{{ url_for('delete_feed', feed_id=feed.feed_id) }}" style="display: inline;" 
+                          onsubmit="return confirm('Are you sure you want to delete this feed?');">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
